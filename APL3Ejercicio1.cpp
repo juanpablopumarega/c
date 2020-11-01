@@ -77,7 +77,6 @@ int main(int argc, char *argv[]){
 
     int pid2 = fork();
     
-
     if(pid2 > 0) {
 
             int pid3 = fork();
@@ -89,14 +88,10 @@ int main(int argc, char *argv[]){
 
                 if(pid4 > 0) {
                     waitpid(pid4, NULL, 0);
-                } 
-                else {
-                    //cout << "NIVEL 2 - NODO 4 - PADRE: " << arbolgenialogico[0] << " - MIO: " << getpid() << endl;
+                } else {
                     imprimirNivel(2,4,arbolgenialogico,getpid());
                 }
-            } 
-            else {
-                //cout << "NIVEL 2 - NODO 3 - PADRE: " << getppid() << " - MIO: " << getpid() << endl;
+            } else {
                 imprimirNivel(2,3,arbolgenialogico,getpid());
                 arbolgenialogico[1] = getpid();
 
@@ -108,27 +103,32 @@ int main(int argc, char *argv[]){
 
                 if(pid7 > 0) {
                     waitpid(pid7, NULL, 0);
-                } 
-                else {
-                    //cout << "NIVEL 3 - NODO 7 - PADRE: " << getppid() << " - MIO: " << getpid() << endl;
+                } else {
                     imprimirNivel(3,7,arbolgenialogico,getpid());
                     arbolgenialogico[2] = getpid();
+                    
+                    if(nivel==3) {
+                        return EXIT_SUCCESS;
+                    }
+                    
                     int pid9 = fork();
 
                     if(pid9 > 0) {
                         waitpid(pid9, NULL, 0);
-                    } 
-                    else {
-                        //cout << "NIVEL 4 - NODO 9 - PADRE: " << getppid() << " - MIO: " << getpid() << endl;
+                    } else {
                         imprimirNivel(4,9,arbolgenialogico,getpid());
                         arbolgenialogico[3] = getpid();
+
+                        if(nivel==4) {
+                            return EXIT_SUCCESS;
+                        }
+
                         int pid10 = fork();
 
                         if(pid10 > 0) {
                             waitpid(pid10, NULL, 0);
                         } 
                         else {
-                            //cout << "NIVEL 5 - NODO 10 - PADRE: " << getppid() << " - MIO: " << getpid() << endl;
                             imprimirNivel(5,10,arbolgenialogico,getpid());
                         }
                     }
@@ -136,8 +136,7 @@ int main(int argc, char *argv[]){
             }
 
         waitpid(pid2, NULL, 0);
-    } 
-    else {
+    } else {
             imprimirNivel(2,2,arbolgenialogico,getpid());
             arbolgenialogico[1] = getpid();
 
@@ -153,29 +152,26 @@ int main(int argc, char *argv[]){
 
                 if(pid6 > 0) {
                     waitpid(pid6, NULL, 0);
-                } 
-                else {
-                    //cout << "NIVEL 3 - NODO 6 - PADRE: " << getppid() << " - MIO: " << getpid() << endl;
+                } else {
                     imprimirNivel(3,6,arbolgenialogico,getpid());
                     arbolgenialogico[2] = getpid();
+
+                    if(nivel==3) {
+                        return EXIT_SUCCESS;
+                    }
 
                     int pid8 = fork();
                     if(pid8 > 0) {
                         waitpid(pid8, NULL, 0);
-                    } 
-                    else {
-                        //cout << "NIVEL 4 - NODO 8 - PADRE: " << getppid() << " - MIO: " << getpid() << endl;
+                    } else {
                         imprimirNivel(4,8,arbolgenialogico,getpid());
                     }
                 }
-            } 
-            else {
+            } else {
                 imprimirNivel(3,5,arbolgenialogico,getpid());
             }
         }
-
     return EXIT_SUCCESS;
-
 }
 
 //Fin
