@@ -1,8 +1,20 @@
+//------------------------------------------------------------------------------------------------------------------
+// APL:              3                                 
+// Ejercicio:        1                                 
+// Entrega N°:       1                                 
+// Nombre Script:    APL3Ejercicio1.cpp                 
+// Ejemplo de uso:   ./APL1Ejercicio2.cpp 3             
+// Grupo 2                                             
+// Lopez Pumarega Juan Pablo             DNI:34593023  
+// Miranda Andres                        DNI:32972232  
+//------------------------------------------------------------------------------------------------------------------
+
 #include <iostream>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <cstring>
 
 using namespace std;
 
@@ -17,14 +29,51 @@ void imprimirNivel(int nivel, int nodo, int arbol[], int miPid){
     cout << " MiPid es: " << miPid << endl;
 }
 
+void ayuda(){
+    cout << "-------------------------------------------------------" << endl;
+    cout << "\t- Ayuda del Script APL3Ejercicio1.cpp ..." << endl;
+    cout << "\t- Nombre Script:     ./APL3Ejercicio1.sh " << endl;
+    cout << "\t- Ejemplo de uso:    ./APL1Ejercicio2.cpp 3" << endl;
+    cout << "\t- N - [Required]     Numero entero entre 1 y 5 que indicará el nivel del arbol a generar" << endl;
+    cout << "\t- Fin de la ayuda... espero te sirva!" << endl;
+    cout << "-------------------------------------------------------" << endl;
+}
 
-int main(){
+
+int main(int argc, char *argv[]){
+
+    //Iniciamos la validación de Parametros
+    if(argc!=2) {
+        cout << "Cantidad de parametros invalida." << endl;
+        cout << "Llamando a la ayuda..." << endl;
+        ayuda();
+        return EXIT_SUCCESS;
+    } else {
+        if(strcmp(argv[1],"-help")==0 || strcmp(argv[1],"-h")==0){
+            ayuda();
+            return EXIT_SUCCESS;
+        } else {
+            if(atoi(argv[1])<1 || atoi(argv[1])>5) {
+                cout << "Se espera un numero natural menos o igual a 5." << endl;
+                cout << "Llamando a la ayuda..." << endl;
+                ayuda();
+                return EXIT_SUCCESS;
+            }
+        }
+    }
+    //Fin de la validación de parametros.
+
+    int nivel = atoi(argv[1]);
 
     cout << "Inicio del proceso" << endl;
     cout << "Nivel: 1 Nodo: 1 MiPid: " << getpid() << endl;
 
-    int arbolgenialogico [5];
+    int arbolgenialogico [nivel];
     arbolgenialogico[0] = getpid();
+
+    if(nivel==1) {
+        return EXIT_SUCCESS;
+    }
 
     int pid2 = fork();
     
@@ -50,6 +99,10 @@ int main(){
                 //cout << "NIVEL 2 - NODO 3 - PADRE: " << getppid() << " - MIO: " << getpid() << endl;
                 imprimirNivel(2,3,arbolgenialogico,getpid());
                 arbolgenialogico[1] = getpid();
+
+                if(nivel==2) {
+                    return EXIT_SUCCESS;
+                }
 
                 int pid7 = fork();
 
@@ -88,6 +141,10 @@ int main(){
             imprimirNivel(2,2,arbolgenialogico,getpid());
             arbolgenialogico[1] = getpid();
 
+            if(nivel==2) {
+                return EXIT_SUCCESS;
+            }
+
             int pid5 = fork();
             if(pid5 > 0) {
                 
@@ -120,3 +177,5 @@ int main(){
     return EXIT_SUCCESS;
 
 }
+
+//Fin
