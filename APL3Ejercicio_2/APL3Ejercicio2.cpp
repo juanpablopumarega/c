@@ -59,6 +59,7 @@ int esVocal(char letra) {
 
 void funcThread1()
 {
+    ofstream salida;
     time_t start = time(0);
     time_t end;
     char* dt = ctime(&start);
@@ -83,17 +84,16 @@ void funcThread1()
         }
         i=0;
     }
-    
-    cout << "Hora de inicio: " << dt << endl;
-    cout << "Numero de thread: "<< getpid() <<endl;
-    cout <<"vocales: " << vocales << endl;
-    cout <<"consonantes: " << consonantes << endl;
-    cout <<"otra cosa: " << otrochar << endl;
+    salida.open("./files/salida/ejemplo.txt");
+    salida << "Hora de inicio: " << dt;
+    salida << "Numero de thread: "<< getpid() <<endl;
+    salida <<"vocales: " << vocales << endl;
+    salida <<"consonantes: " << consonantes << endl;
+    salida <<"otra cosa: " << otrochar << endl;
     sleep(5);
     end = time(0);
     char* fin = ctime(&end);
-    cout << "Hora de fin: " << fin << endl;
-    
+    salida << "Hora de fin: " << fin << endl;
 }
 
 
