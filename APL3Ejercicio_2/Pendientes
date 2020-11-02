@@ -1,0 +1,11 @@
+Validacion de parametros
+makefile, no funciona
+recibir directorio de entrada por parametro
+recibir directorio de salida por parametro
+recibir el numero de threads a crear por parametros
+validar que la cantidad de threads a crear no sea mayor a la cantidad de archivos existentes
+asignar los archivos a los threads
+crear la ayuda
+crear la cantidad de threads necesarias
+recorrer el directorio para obtener cantidad de archivos
+recorrer el directorio para obtener nombres de archivos
