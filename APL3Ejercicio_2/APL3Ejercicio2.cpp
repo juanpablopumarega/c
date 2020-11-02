@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------------------------
 // APL:              3                                 
-// Ejercicio:        1                                 
+// Ejercicio:        2                                 
 // Entrega N°:       1                                 
 // Nombre Script:    APL3Ejercicio2.cpp                 
 // Ejemplo de uso:   ./APL1Ejercicio2.cpp 3             
@@ -26,13 +26,11 @@ using namespace std;
 bool is_dir(string dir)
 {
     DIR * directorio;
-    if(directorio=opendir(dir.c_str()) )
-    {
+    if(directorio=opendir(dir.c_str())) {
         closedir(directorio);
         return true;
     }
-    else 
-    {
+    else {
         return false;
     }
 }
@@ -40,13 +38,11 @@ bool is_dir(string dir)
 bool is_file(string file)
 {
     FILE * archivo;
-    if(archivo=fopen(file.c_str(),"r") )
-    {
+    if(archivo=fopen(file.c_str(),"r")) {
         fclose(archivo);
         return true;
     }
-    else 
-    {
+    else {
         return false;
     }
 }
@@ -70,14 +66,13 @@ void funcThread1()
     string cadena;
     ifstream MyReadFile("/home/andres/Documentos/GitHub/c/APL3Ejercicio_2/files/ejemplo.txt");
     
-    
     while(getline(MyReadFile,cadena)){
         while(cadena[i]){
             if (esVocal(cadena[i])) {
                 vocales++;
             }
-            else{
-                if(!isalpha(cadena[i])){
+            else {
+                if(!isalpha(cadena[i])) {
                     otrochar++;
                 }
                 else {
