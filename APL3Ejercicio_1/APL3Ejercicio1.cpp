@@ -90,6 +90,7 @@ int main(int argc, char *argv[]){
                     waitpid(pid4, NULL, 0);
                 } else {
                     imprimirNivel(2,4,arbolgenialogico,getpid());
+                    sleep(15);
                 }
             } else {
                 imprimirNivel(2,3,arbolgenialogico,getpid());
@@ -130,6 +131,7 @@ int main(int argc, char *argv[]){
                         } 
                         else {
                             imprimirNivel(5,10,arbolgenialogico,getpid());
+                            sleep(15);
                         }
                     }
                 }
@@ -165,10 +167,12 @@ int main(int argc, char *argv[]){
                         waitpid(pid8, NULL, 0);
                     } else {
                         imprimirNivel(4,8,arbolgenialogico,getpid());
+                        sleep(15);
                     }
                 }
             } else {
                 imprimirNivel(3,5,arbolgenialogico,getpid());
+                sleep(15);
             }
         }
     return EXIT_SUCCESS;
