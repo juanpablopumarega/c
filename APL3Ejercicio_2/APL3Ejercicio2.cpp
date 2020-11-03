@@ -96,12 +96,66 @@ void funcThread1()
     salida << "Hora de fin: " << fin << endl;
 }
 
+void ayuda(){
+    cout << "-------------------------------------------------------" << endl;
+    cout << "\t- Ayuda del Script APL3Ejercicio1.cpp ..." << endl;
+    cout << "\t- Nombre Script:     ./APL3Ejercicio1.sh " << endl;
+    cout << "\t- Ejemplo de uso:    ./APL1Ejercicio2.cpp 3" << endl;
+    cout << "\t- N - [Required]     Numero entero entre 1 y 5 que indicará el nivel del arbol a generar" << endl;
+    cout << "\t- Fin de la ayuda... espero te sirva!" << endl;
+    cout << "-------------------------------------------------------" << endl;
+}
 
 
-int main()
+int main(int argc, char *argv[])
 {
+    //Iniciamos la validación de Parametros
+    if(argc!=4) {
+        cout << "Cantidad de parametros invalida." << endl;
+        cout << "Llamando a la ayuda..." << endl;
+        ayuda();
+        return EXIT_SUCCESS;
+    } else {
+        if(strcmp(argv[1],"-help")==0 || strcmp(argv[1],"-h")==0){
+            ayuda();
+            return EXIT_SUCCESS;
+        } else {
+            if(atoi(argv[1])<1 || atoi(argv[1])>5) {
+                cout << "Se espera un numero natural menos o igual a 5." << endl;
+                cout << "Llamando a la ayuda..." << endl;
+                ayuda();
+                return EXIT_SUCCESS;
+            }
+        }
+    }
+    //Fin de la validación de parametros.
+
+
+    int paralelismo=atoi(argv[1]), n=0;
+    const char * dirEntrada=argv[2];
+    const char * dirSalida=argv[3];
+    struct dirent **namelist;
+    int archivosXThread=0;
+    
+    n = scandir(dirEntrada, &namelist, 0, alphasort);
+    archivosXThread=n/paralelismo;
+    cout << "La cantidad de archivos es: " << n << endl << "El nivel de paralelismo es: " << paralelismo << endl << "Archivos por Thread: " << archivosXThread << endl;
     cout << "Proceso padre: " << getpid() << endl;
-    thread th1(funcThread1);    
+    if(n < 0)
+        perror("scandir");
+    else {
+        while(n--) {
+        
+            printf("%s\n", namelist[n]->d_name);
+            
+            free(namelist[n]);
+        }
+        
+        free(namelist);
+    }
+    thread th1(funcThread1,dirEntrada,dirSalida);    
     th1.join();
+    thread th2(funcThread1);    
+    th2.join();
     return EXIT_SUCCESS;
 }
