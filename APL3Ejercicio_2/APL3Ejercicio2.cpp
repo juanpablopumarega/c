@@ -57,7 +57,7 @@ int esVocal(char letra) {
            letraEnMayuscula == 'U';
 }
 
-void funcThread1()
+void funcThread1(const char * fileEntrada, const char * fileSalida)
 {
     ofstream salida;
     time_t start = time(0);
@@ -65,7 +65,7 @@ void funcThread1()
     char* dt = ctime(&start);
     int vocales=0,consonantes=0,otrochar=0,i=0;
     string cadena;
-    ifstream MyReadFile("/home/andres/Documentos/GitHub/c/APL3Ejercicio_2/files/ejemplo.txt");
+    ifstream MyReadFile(fileEntrada);
     
     while(getline(MyReadFile,cadena)){
         while(cadena[i]){
@@ -84,7 +84,7 @@ void funcThread1()
         }
         i=0;
     }
-    salida.open("./files/salida/ejemplo.txt");
+    salida.open(fileSalida);
     salida << "Hora de inicio: " << dt;
     salida << "Numero de thread: "<< getpid() <<endl;
     salida <<"vocales: " << vocales << endl;
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
             ayuda();
             return EXIT_SUCCESS;
         } else {
-            if(atoi(argv[1])<1 || atoi(argv[1])>5) {
+            if(atoi(argv[1])<1 || atoi(argv[1])>20) {
                 cout << "Se espera un numero natural menos o igual a 5." << endl;
                 cout << "Llamando a la ayuda..." << endl;
                 ayuda();
@@ -131,31 +131,76 @@ int main(int argc, char *argv[])
     //Fin de la validación de parametros.
 
 
-    int paralelismo=atoi(argv[1]), n=0;
+    int paralelismo=atoi(argv[1]), n=0, i=0, x=0, y=0, cantidadFiles=0;
     const char * dirEntrada=argv[2];
     const char * dirSalida=argv[3];
     struct dirent **namelist;
     int archivosXThread=0;
     
-    n = scandir(dirEntrada, &namelist, 0, alphasort);
-    archivosXThread=n/paralelismo;
+    cantidadFiles = n = scandir(dirEntrada, &namelist, 0, alphasort);
+    archivosXThread=(n/paralelismo)+1;
+
     cout << "La cantidad de archivos es: " << n << endl << "El nivel de paralelismo es: " << paralelismo << endl << "Archivos por Thread: " << archivosXThread << endl;
     cout << "Proceso padre: " << getpid() << endl;
-    if(n < 0)
+
+    if(n < 0) {
         perror("scandir");
-    else {
+    } else {
         while(n--) {
-        
             printf("%s\n", namelist[n]->d_name);
-            
             free(namelist[n]);
         }
         
         free(namelist);
     }
-    thread th1(funcThread1,dirEntrada,dirSalida);    
+
+    int archivoXthread[paralelismo][archivosXThread];
+    int h=0;
+
+    for (int i = 0; i < archivosXThread; i++)
+    {
+        for (int j = 0; j < paralelismo; j++)
+        {
+            h++;
+            if(cantidadFiles>=h) {
+                archivoXthread[j][i]=h;
+            }
+        }
+    }
+
+    h=0;
+
+    for (int i = 0; i < paralelismo; i++)
+    {
+        cout << "Fila: " << i << " " << endl;
+        for (int j = 0; j < archivosXThread; j++)
+        {
+            h++;
+            if(cantidadFiles>=h)
+                cout << archivoXthread[i][j] << endl;
+        }
+    }
+
+
+
+    //for(x = 0; x < paralelismo; x++) {
+    //    cout << "---------" << endl;
+    //    for(y = 0 + archivosXThread * x; y < archivosXThread * x + archivosXThread; y++) {
+    //        cout << "valor de x: " << x << " Valor de y: " << y << endl;
+    //    }
+    //    cout << "---------" << endl;
+    //
+    //    //if(x==(paralelismo-1) && ) {
+    //    //
+    //    //}
+    //
+    //}
+
+
+    thread th1(funcThread1,"/home/jp/c/APL3Ejercicio_2/files/entrada/ejemplo4.txt","/home/jp/c/APL3Ejercicio_2/files/salida/ejemplo4.txt"); 
+    thread th2(funcThread1,"/home/jp/c/APL3Ejercicio_2/files/entrada/ejemplo5.txt","/home/jp/c/APL3Ejercicio_2/files/salida/ejemplo5.txt");     
     th1.join();
-    thread th2(funcThread1);    
     th2.join();
+
     return EXIT_SUCCESS;
 }
