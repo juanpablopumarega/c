@@ -151,15 +151,17 @@ int main(int argc, char *argv[])
     //Fin de la validación de parametros.
 
 
-    int paralelismo=atoi(argv[1]), n=0, i=0, x=0, y=0, cantidadFiles=0;
+    int paralelismo=atoi(argv[1]), n=0, i=0, x=0, y=0, cantidadFiles=0, r=0;
     char * dirEntrada=argv[2];
     char * dirSalida=argv[3];
     struct dirent **namelist;
     int archivosXThread=0;
     list<string>::iterator iterador;
+    thread th1;
 
     cantidadFiles = n = scandir(dirEntrada, &namelist, 0, alphasort);
-
+    int resto = (n-2)%paralelismo;
+    cout << "resto: " << resto << endl;
     archivosXThread=(n-2)/paralelismo;
 
     cout << "La cantidad de archivos es: " << n << endl << "El nivel de paralelismo es: " << paralelismo << endl << "Archivos por Thread: " << archivosXThread << endl;
@@ -172,12 +174,20 @@ int main(int argc, char *argv[])
     for( int i = 0; i < paralelismo; i++ ) {
         
         list<string> lista;
+
+        if(resto>0) {
+            r=1;
+            resto--;
+        } else {
+            r=0;
+        }
         
         //Itero por cantidad de archivos existentes y evito el "." y ".."
-        for ( int j = 0; j < archivosXThread; j++ ){
+        for ( int j = 0; j < archivosXThread + r; j++ ){
             if(n-- && strcmp(namelist[n]->d_name,".")!=0 && strcmp(namelist[n]->d_name,"..")!=0){
                 lista.push_back(namelist[n]->d_name);
             }
+            
         }
 
         //BORRAR ANTES DE ENTREGAR ES SOLO DE REFERENCIA
@@ -192,17 +202,13 @@ int main(int argc, char *argv[])
 
         thread th1(funcThread1, lista, dirEntrada, dirSalida, i+1);
         th1.join();
+
     }
 
+   //for( int i = 0; i < paralelismo; i++ ) {
+   //    th1.join();
+   //}
 
-    //for( int i = 0; i < paralelismo; i++ ) {
-    //    th1.join();
-    //}
-
-    //thread th1(funcThread1,"/home/jp/c/APL3Ejercicio_2/files/entrada/ejemplo4.txt","/home/jp/c/APL3Ejercicio_2/files/salida/ejemplo4.txt"); 
-    //thread th2(funcThread1,"/home/jp/c/APL3Ejercicio_2/files/entrada/ejemplo5.txt","/home/jp/c/APL3Ejercicio_2/files/salida/ejemplo5.txt");     
-    //th1.join();
-    //th2.join();
 
     return EXIT_SUCCESS;
 }
