@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
     //Fin de la validación de parametros.
 
 
-    int paralelismo=atoi(argv[1]), n=0, i=0, x=0, y=0, cantidadFiles=0, r=0;
+    int paralelismo=atoi(argv[1]), n=0, i=0, x=0, y=0, r=0, resto=0;
     char * dirEntrada=argv[2];
     char * dirSalida=argv[3];
     struct dirent **namelist;
@@ -159,12 +159,19 @@ int main(int argc, char *argv[])
     list<string>::iterator iterador;
     thread th1;
 
-    cantidadFiles = n = scandir(dirEntrada, &namelist, 0, alphasort);
-    int resto = (n-2)%paralelismo;
-    cout << "resto: " << resto << endl;
-    archivosXThread=(n-2)/paralelismo;
+    n = scandir(dirEntrada, &namelist, 0, alphasort);
+    
+    if((n-2)<paralelismo) {
+        paralelismo=(n-2);
+        archivosXThread=1;
+    } else {
+        resto = (n-2)%paralelismo;
+        archivosXThread=(n-2)/paralelismo;
+    }
 
-    cout << "La cantidad de archivos es: " << n << endl << "El nivel de paralelismo es: " << paralelismo << endl << "Archivos por Thread: " << archivosXThread << endl;
+    cout << "La cantidad de archivos es: " << n << endl;
+    cout << "El nivel de paralelismo es: " << paralelismo << endl;
+    cout << "Archivos por Thread: " << archivosXThread << endl;
     cout << "Proceso padre: " << getpid() << endl;
 
     char *archivoXthread1[paralelismo][archivosXThread];
