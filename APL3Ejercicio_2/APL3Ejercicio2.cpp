@@ -20,6 +20,7 @@
 #include <dirent.h>
 #include <fstream>
 #include <ctime>
+#include <list>
 
 using namespace std;
 
@@ -57,53 +58,72 @@ int esVocal(char letra) {
            letraEnMayuscula == 'U';
 }
 
-void funcThread1(const char * fileEntrada, const char * fileSalida)
+void funcThread1(list<string> lista, char * dirEntrada, char * dirSalida, int nroThread)
 {
-    ofstream salida;
+    
     time_t start = time(0);
     time_t end;
     char* dt = ctime(&start);
-    int vocales=0,consonantes=0,otrochar=0,i=0;
-    string cadena;
-    ifstream MyReadFile(fileEntrada);
-    
-    while(getline(MyReadFile,cadena)){
-        while(cadena[i]){
-            if (esVocal(cadena[i])) {
-                vocales++;
-            }
-            else {
-                if(!isalpha(cadena[i])) {
-                    otrochar++;
+    list<string>::iterator iterador;
+
+    cout << "comienzo a iterar la lista dentro " << endl;
+    iterador=lista.begin();
+
+    while( iterador != lista.end())  {
+
+        string entrada = dirEntrada + *iterador;
+        string salida = dirSalida + *iterador;
+        ofstream MyWriteFile;
+        int vocales=0,consonantes=0,otrochar=0,i=0;
+        string cadena;
+        ifstream MyReadFile(entrada);
+
+        //Hago las operaciones sobre el file
+        while(getline(MyReadFile,cadena)){
+            while(cadena[i]){
+                if (esVocal(cadena[i])) {
+                    vocales++;
                 }
                 else {
-                    consonantes++;
+                    if(!isalpha(cadena[i])) {
+                        otrochar++;
+                    }
+                    else {
+                        consonantes++;
+                    }
                 }
+                i++;
             }
-            i++;
+            i=0;
         }
-        i=0;
+
+        MyWriteFile.open(salida);
+
+        MyWriteFile << "Hora de inicio: " << dt;
+        MyWriteFile << "Numero de thread: "<< nroThread <<endl;
+        MyWriteFile << "vocales: " << vocales << endl;
+        MyWriteFile << "consonantes: " << consonantes << endl;
+        MyWriteFile << "otra cosa: " << otrochar << endl;
+        end = time(0);
+        char* fin = ctime(&end);
+        MyWriteFile << "Hora de fin: " << fin << endl;
+
+        iterador++;
     }
-    salida.open(fileSalida);
-    salida << "Hora de inicio: " << dt;
-    salida << "Numero de thread: "<< getpid() <<endl;
-    salida <<"vocales: " << vocales << endl;
-    salida <<"consonantes: " << consonantes << endl;
-    salida <<"otra cosa: " << otrochar << endl;
-    sleep(5);
-    end = time(0);
-    char* fin = ctime(&end);
-    salida << "Hora de fin: " << fin << endl;
+
+    cout << "fin de la iteración de la lista" << endl;
+    //BORRAR ANTES DE ENTREGAR ES SOLO DE REFERENCIA
+
 }
 
 void ayuda(){
-    cout << "-------------------------------------------------------" << endl;
-    cout << "\t- Ayuda del Script APL3Ejercicio1.cpp ..." << endl;
-    cout << "\t- Nombre Script:     ./APL3Ejercicio1.sh " << endl;
-    cout << "\t- Ejemplo de uso:    ./APL1Ejercicio2.cpp 3" << endl;
-    cout << "\t- N - [Required]     Numero entero entre 1 y 5 que indicará el nivel del arbol a generar" << endl;
-    cout << "\t- Fin de la ayuda... espero te sirva!" << endl;
-    cout << "-------------------------------------------------------" << endl;
+    cout << "-------------------------------------------------------"                                       << endl;
+    cout << "\t- Ayuda del Script APL3Ejercicio1.cpp ..."                                                   << endl;
+    cout << "\t- Nombre Script:     ./APL3Ejercicio1.sh "                                                   << endl;
+    cout << "\t- Ejemplo de uso:    ./APL1Ejercicio2.cpp 3 '/home/jp/c/APL3Ejercicio_2/files/entrada' '/home/jp/c/APL3Ejercicio_2/files/salida'"                                                 << endl;
+    cout << "\t- N - [Required]     Numero entero entre 1 y 5 que indicará el nivel del arbol a generar"    << endl;
+    cout << "\t- Fin de la ayuda... espero te sirva!"                                                       << endl;
+    cout << "-------------------------------------------------------"                                       << endl;
 }
 
 
@@ -132,75 +152,57 @@ int main(int argc, char *argv[])
 
 
     int paralelismo=atoi(argv[1]), n=0, i=0, x=0, y=0, cantidadFiles=0;
-    const char * dirEntrada=argv[2];
-    const char * dirSalida=argv[3];
+    char * dirEntrada=argv[2];
+    char * dirSalida=argv[3];
     struct dirent **namelist;
     int archivosXThread=0;
-    
+    list<string>::iterator iterador;
+
     cantidadFiles = n = scandir(dirEntrada, &namelist, 0, alphasort);
-    archivosXThread=(n/paralelismo)+1;
+
+    archivosXThread=(n-2)/paralelismo;
 
     cout << "La cantidad de archivos es: " << n << endl << "El nivel de paralelismo es: " << paralelismo << endl << "Archivos por Thread: " << archivosXThread << endl;
     cout << "Proceso padre: " << getpid() << endl;
 
-    if(n < 0) {
-        perror("scandir");
-    } else {
-        while(n--) {
-            printf("%s\n", namelist[n]->d_name);
-            free(namelist[n]);
-        }
-        
-        free(namelist);
-    }
-
-    int archivoXthread[paralelismo][archivosXThread];
+    char *archivoXthread1[paralelismo][archivosXThread];
     int h=0;
 
-    for (int i = 0; i < archivosXThread; i++)
-    {
-        for (int j = 0; j < paralelismo; j++)
-        {
-            h++;
-            if(cantidadFiles>=h) {
-                archivoXthread[j][i]=h;
+    //Itero por cantidad de threads
+    for( int i = 0; i < paralelismo; i++ ) {
+        
+        list<string> lista;
+        
+        //Itero por cantidad de archivos existentes y evito el "." y ".."
+        for ( int j = 0; j < archivosXThread; j++ ){
+            if(n-- && strcmp(namelist[n]->d_name,".")!=0 && strcmp(namelist[n]->d_name,"..")!=0){
+                lista.push_back(namelist[n]->d_name);
             }
         }
-    }
 
-    h=0;
-
-    for (int i = 0; i < paralelismo; i++)
-    {
-        cout << "Fila: " << i << " " << endl;
-        for (int j = 0; j < archivosXThread; j++)
-        {
-            h++;
-            if(cantidadFiles>=h)
-                cout << archivoXthread[i][j] << endl;
+        //BORRAR ANTES DE ENTREGAR ES SOLO DE REFERENCIA
+        cout << "comienzo a iterar la lista" << endl;
+        iterador=lista.begin();
+        while( iterador != lista.end())  {
+            cout << *iterador << endl;    
+            iterador++;
         }
+        cout << "fin de la iteración de la lista" << endl;
+        //BORRAR ANTES DE ENTREGAR ES SOLO DE REFERENCIA
+
+        thread th1(funcThread1, lista, dirEntrada, dirSalida, i+1);
+        th1.join();
     }
 
 
-
-    //for(x = 0; x < paralelismo; x++) {
-    //    cout << "---------" << endl;
-    //    for(y = 0 + archivosXThread * x; y < archivosXThread * x + archivosXThread; y++) {
-    //        cout << "valor de x: " << x << " Valor de y: " << y << endl;
-    //    }
-    //    cout << "---------" << endl;
-    //
-    //    //if(x==(paralelismo-1) && ) {
-    //    //
-    //    //}
-    //
+    //for( int i = 0; i < paralelismo; i++ ) {
+    //    th1.join();
     //}
 
-
-    thread th1(funcThread1,"/home/jp/c/APL3Ejercicio_2/files/entrada/ejemplo4.txt","/home/jp/c/APL3Ejercicio_2/files/salida/ejemplo4.txt"); 
-    thread th2(funcThread1,"/home/jp/c/APL3Ejercicio_2/files/entrada/ejemplo5.txt","/home/jp/c/APL3Ejercicio_2/files/salida/ejemplo5.txt");     
-    th1.join();
-    th2.join();
+    //thread th1(funcThread1,"/home/jp/c/APL3Ejercicio_2/files/entrada/ejemplo4.txt","/home/jp/c/APL3Ejercicio_2/files/salida/ejemplo4.txt"); 
+    //thread th2(funcThread1,"/home/jp/c/APL3Ejercicio_2/files/entrada/ejemplo5.txt","/home/jp/c/APL3Ejercicio_2/files/salida/ejemplo5.txt");     
+    //th1.join();
+    //th2.join();
 
     return EXIT_SUCCESS;
 }
