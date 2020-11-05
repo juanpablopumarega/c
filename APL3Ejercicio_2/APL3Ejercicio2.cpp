@@ -117,13 +117,13 @@ void funcThread1(list<string> lista, char * dirEntrada, char * dirSalida, int nr
 }
 
 void ayuda(){
-    cout << "-------------------------------------------------------"                                       << endl;
+    cout << "-----------------------------------------------------------------------------------"                                       << endl;
     cout << "\t- Ayuda del Script APL3Ejercicio1.cpp ..."                                                   << endl;
     cout << "\t- Nombre Script:     ./APL3Ejercicio1.sh "                                                   << endl;
     cout << "\t- Ejemplo de uso:    ./APL1Ejercicio2.cpp 3 '/home/jp/c/APL3Ejercicio_2/files/entrada' '/home/jp/c/APL3Ejercicio_2/files/salida'"                                                 << endl;
     cout << "\t- N - [Required]     Numero entero entre 1 y 5 que indicará el nivel del arbol a generar"    << endl;
     cout << "\t- Fin de la ayuda... espero te sirva!"                                                       << endl;
-    cout << "-------------------------------------------------------"                                       << endl;
+    cout << "------------------------------------------------------------------------------------"                                       << endl;
 }
 
 
