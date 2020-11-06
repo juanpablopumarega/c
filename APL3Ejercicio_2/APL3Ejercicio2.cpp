@@ -134,7 +134,6 @@ void funcThread1(list<string> lista, char *dirEntrada, char *dirSalida, int nroT
 
         //Si es la primera vez que entro inicializo los vectores
         if(memoriaCompartida->bandera==1){
-            cout << "Entre a la bandera.. soy el file" << entrada << endl;
             memoriaCompartida->cantMayor=cantidadTotalDeCaracteres;
             memoriaCompartida->cantMenor=cantidadTotalDeCaracteres;
             memoriaCompartida->fileNameCantMayor=entrada;
