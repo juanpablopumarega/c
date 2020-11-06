@@ -22,11 +22,26 @@
 #include <ctime>
 #include <list>
 #include <mutex>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <semaphore.h>
 
 using namespace std;
 
 mutex m1;
 
+typedef struct 
+{
+	int cantMenor;
+    string fileNameCantMenor;
+	int cantMayor;
+    string fileNameCantMayor;
+	int bandera;
+    string primerFile;
+    string ultimoFile;
+    int cantidadFiles;
+}tMemoriaCompartida;
 
 bool is_dir(string dir)
 {
@@ -62,7 +77,7 @@ int esVocal(char letra) {
            letraEnMayuscula == 'U';
 }
 
-void funcThread1(list<string> lista, char * dirEntrada, char * dirSalida, int nroThread)
+void funcThread1(list<string> lista, char *dirEntrada, char *dirSalida, int nroThread, tMemoriaCompartida* memoriaCompartida)
 {
     
     time_t start = time(0);
@@ -115,6 +130,35 @@ void funcThread1(list<string> lista, char * dirEntrada, char * dirSalida, int nr
         //Entramos a la zona critica y guardamos los datos del archivo si cumple con enunciado
         m1.lock();
 
+        int cantidadTotalDeCaracteres = vocales+consonantes+otrochar;
+
+        //Si es la primera vez que entro inicializo los vectores
+        if(memoriaCompartida->bandera==1){
+            cout << "Entre a la bandera.. soy el file" << entrada << endl;
+            memoriaCompartida->cantMayor=cantidadTotalDeCaracteres;
+            memoriaCompartida->cantMenor=cantidadTotalDeCaracteres;
+            memoriaCompartida->fileNameCantMayor=entrada;
+            memoriaCompartida->fileNameCantMenor=entrada;
+            memoriaCompartida->bandera=0;
+            memoriaCompartida->primerFile=entrada;
+            memoriaCompartida->ultimoFile=entrada;
+        }
+        
+        if(memoriaCompartida->cantMayor<cantidadTotalDeCaracteres){
+            memoriaCompartida->cantMayor=cantidadTotalDeCaracteres;
+            memoriaCompartida->fileNameCantMayor=entrada;
+        }
+
+        if(memoriaCompartida->cantMenor>cantidadTotalDeCaracteres){
+            memoriaCompartida->cantMenor=cantidadTotalDeCaracteres;
+            memoriaCompartida->fileNameCantMenor=entrada;
+        }
+
+        memoriaCompartida->cantidadFiles--;
+
+        if(memoriaCompartida->cantidadFiles==0) {
+            memoriaCompartida->ultimoFile=entrada;
+        }
 
         m1.unlock();
         //Salimos de la zona critica
@@ -124,13 +168,18 @@ void funcThread1(list<string> lista, char * dirEntrada, char * dirSalida, int nr
 }
 
 void ayuda(){
-    cout << "-----------------------------------------------------------------------------------"                                       << endl;
+    cout << "-----------------------------------------------------------------------------------"           << endl;
     cout << "\t- Ayuda del Script APL3Ejercicio1.cpp ..."                                                   << endl;
-    cout << "\t- Nombre Script:     ./APL3Ejercicio1.sh "                                                   << endl;
-    cout << "\t- Ejemplo de uso:    ./APL1Ejercicio2.cpp 3 '/home/jp/c/APL3Ejercicio_2/files/entrada' '/home/jp/c/APL3Ejercicio_2/files/salida'"                                                 << endl;
-    cout << "\t- N - [Required]     Numero entero entre 1 y 5 que indicará el nivel del arbol a generar"    << endl;
+    cout << "\t- Descripcion - Script para contar letras dentro de todos los archivosd en directorio con una paralelización especificada por parametro"                                                   << endl;
+    cout << "\t- Nombre Script:     ./APL3Ejercicio2 "                                                      << endl;
+    cout << "\t- Ejemplo de uso:    ./APL1Ejercicio2 3 './files/entrada' './files/salida'"                  << endl;
+    cout << "\t- Parametros: "                  << endl;
+    cout << "\t\t- N - [Required]     Numero entero mayor que cero que indique el paralelismo a realizarse. "  << endl;
+    cout << "\t\t-                    En caso de que el paralelismo sea mayor al numero de files a analizar, quedará asignado como el nro de files" << endl;
+    cout << "\t\t- Path entrada - [Required]     Path absoluto o relativo del directorio a analizar"  << endl;
+    cout << "\t\t- Path salida  - [Required]     Path absoluto o relativo del directorio de salida"  << endl;
     cout << "\t- Fin de la ayuda... espero te sirva!"                                                       << endl;
-    cout << "------------------------------------------------------------------------------------"                                       << endl;
+    cout << "------------------------------------------------------------------------------------"          << endl;
 }
 
 
@@ -157,8 +206,8 @@ int main(int argc, char *argv[])
     }
     //Fin de la validación de parametros.
 
-
-    int paralelismo=atoi(argv[1]), n=0, i=0, x=0, y=0, r=0, resto=0;
+    //Declaración de variables utilizadas.
+    int paralelismo=atoi(argv[1]), n=0, r=0, resto=0;
     char * dirEntrada=argv[2];
     char * dirSalida=argv[3];
     struct dirent **namelist;
@@ -166,8 +215,25 @@ int main(int argc, char *argv[])
     list<string>::iterator iterador;
     std::thread myThreads[paralelismo];
 
+    //funciones para memoria compartida
+    int fd = shm_open("memoriaCompartida", O_CREAT | O_RDWR, 0600);
+
+    ftruncate(fd, sizeof(tMemoriaCompartida));
+
+    tMemoriaCompartida *memoriaCompartida = (tMemoriaCompartida *)mmap(NULL, 
+                                            sizeof(tMemoriaCompartida), 
+                                            PROT_READ | PROT_WRITE, 
+                                            MAP_SHARED, 
+                                            fd, 
+                                            0);
+
+    close(fd);
+
+    memoriaCompartida->bandera=1;
+
     n = scandir(dirEntrada, &namelist, 0, alphasort);
-    
+    memoriaCompartida->cantidadFiles = n-2;
+
     if((n-2)<paralelismo) {
         paralelismo=(n-2);
         archivosXThread=1;
@@ -177,14 +243,11 @@ int main(int argc, char *argv[])
     }
 
     cout << "---------------------------------------" << endl;
-    cout << "La cantidad de archivos es: " << n << endl;
-    cout << "El nivel de paralelismo es: " << paralelismo << endl;
-    cout << "Archivos por Thread: " << archivosXThread << endl;
-    cout << "Proceso padre: " << getpid() << endl;
+    cout << "La cantidad de archivos es: \t" << n-2 << endl;
+    cout << "El nivel de paralelismo es: \t" << paralelismo << endl;
+    cout << "Archivos por Thread: \t\t" << archivosXThread << endl;
+    cout << "Proceso padre: \t\t\t" << getpid() << endl;
     cout << "---------------------------------------" << endl;
-
-    char *archivoXthread1[paralelismo][archivosXThread];
-    int h=0;
 
     //Itero por cantidad de threads
     for( int i = 0; i < paralelismo; i++ ) {
@@ -217,13 +280,27 @@ int main(int argc, char *argv[])
         cout << endl;
         
         //Genero el Thread y le paso los parametros necesarios
-        myThreads[i] = std::thread(funcThread1, lista, dirEntrada, dirSalida, i);
+        myThreads[i] = std::thread(funcThread1, 
+                                    lista, 
+                                    dirEntrada, 
+                                    dirSalida, 
+                                    i, 
+                                    memoriaCompartida);
     }
 
     //Itero para ir cerrando todos los joins
     for (int i=0; i < paralelismo ; i++){
         myThreads[i].join();
     }
+
+    cout << "Menor cantidad de caracteres (" << memoriaCompartida->cantMenor << ")" << "File: " << memoriaCompartida->fileNameCantMenor << endl;
+    cout << "Mayor cantidad de caracteres (" << memoriaCompartida->cantMayor << ")" << "File: " << memoriaCompartida->fileNameCantMayor << endl;
+    cout << "Primer archivo finalizado: " << memoriaCompartida->primerFile << endl;
+    cout << "Último archivo finalizado: " << memoriaCompartida->ultimoFile << endl;   
+
+    //Libero la memoria tomada
+    munmap(memoriaCompartida, sizeof(tMemoriaCompartida));
+    shm_unlink("memoriaCompartida");
 
     return EXIT_SUCCESS;
 }

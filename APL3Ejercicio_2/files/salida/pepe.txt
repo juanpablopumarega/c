@@ -1,7 +1,7 @@
-Hora de inicio: Thu Nov  5 21:12:56 2020
+Hora de inicio: Fri Nov  6 01:06:11 2020
 Numero de thread: 3
 Cant Vocales: 39
 Cant Consonantes: 57
 Cant de otros caracteres: 16
-Hora de finalización: Thu Nov  5 21:12:56 2020
+Hora de finalización: Fri Nov  6 01:06:11 2020
 

@@ -6,4 +6,4 @@
 all: cliente
 
 cliente:
-	g++ -o APL3Ejercicio2 APL3Ejercicio2.cpp -lpthread
+	g++ -o APL3Ejercicio2 APL3Ejercicio2.cpp -lpthread -lrt
