@@ -21,8 +21,12 @@
 #include <fstream>
 #include <ctime>
 #include <list>
+#include <mutex>
 
 using namespace std;
+
+mutex m1;
+
 
 bool is_dir(string dir)
 {
@@ -66,7 +70,7 @@ void funcThread1(list<string> lista, char * dirEntrada, char * dirSalida, int nr
     char* dt = ctime(&start);
     list<string>::iterator iterador;
 
-    cout << "comienzo a iterar la lista dentro " << endl;
+    //Comenzamos a iterar la lista de archivos que analizará este thread.
     iterador=lista.begin();
 
     while( iterador != lista.end())  {
@@ -98,22 +102,25 @@ void funcThread1(list<string> lista, char * dirEntrada, char * dirSalida, int nr
         }
 
         MyWriteFile.open(salida);
-
         MyWriteFile << "Hora de inicio: " << dt;
-        MyWriteFile << "Numero de thread: "<< nroThread <<endl;
-        MyWriteFile << "vocales: " << vocales << endl;
-        MyWriteFile << "consonantes: " << consonantes << endl;
-        MyWriteFile << "otra cosa: " << otrochar << endl;
+        MyWriteFile << "Numero de thread: "<< nroThread+1 <<endl;
+        MyWriteFile << "Cant Vocales: " << vocales << endl;
+        MyWriteFile << "Cant Consonantes: " << consonantes << endl;
+        MyWriteFile << "Cant de otros caracteres: " << otrochar << endl;
+
         end = time(0);
         char* fin = ctime(&end);
-        MyWriteFile << "Hora de fin: " << fin << endl;
+        MyWriteFile << "Hora de finalización: " << fin << endl;
+
+        //Entramos a la zona critica y guardamos los datos del archivo si cumple con enunciado
+        m1.lock();
+
+
+        m1.unlock();
+        //Salimos de la zona critica
 
         iterador++;
     }
-
-    cout << "fin de la iteración de la lista" << endl;
-    //BORRAR ANTES DE ENTREGAR ES SOLO DE REFERENCIA
-
 }
 
 void ayuda(){
@@ -157,7 +164,7 @@ int main(int argc, char *argv[])
     struct dirent **namelist;
     int archivosXThread=0;
     list<string>::iterator iterador;
-    thread th1;
+    std::thread myThreads[paralelismo];
 
     n = scandir(dirEntrada, &namelist, 0, alphasort);
     
@@ -169,10 +176,12 @@ int main(int argc, char *argv[])
         archivosXThread=(n-2)/paralelismo;
     }
 
+    cout << "---------------------------------------" << endl;
     cout << "La cantidad de archivos es: " << n << endl;
     cout << "El nivel de paralelismo es: " << paralelismo << endl;
     cout << "Archivos por Thread: " << archivosXThread << endl;
     cout << "Proceso padre: " << getpid() << endl;
+    cout << "---------------------------------------" << endl;
 
     char *archivoXthread1[paralelismo][archivosXThread];
     int h=0;
@@ -197,25 +206,24 @@ int main(int argc, char *argv[])
             
         }
 
-        //BORRAR ANTES DE ENTREGAR ES SOLO DE REFERENCIA
-        cout << "comienzo a iterar la lista" << endl;
+        //Imprimo La información adicional solicitada por pantalla
+        cout << "Archivos Analizados por el Thread Numero: " << i+1 << endl;
+        
         iterador=lista.begin();
         while( iterador != lista.end())  {
             cout << *iterador << endl;    
             iterador++;
         }
-        cout << "fin de la iteración de la lista" << endl;
-        //BORRAR ANTES DE ENTREGAR ES SOLO DE REFERENCIA
-
-        thread th1(funcThread1, lista, dirEntrada, dirSalida, i+1);
-        th1.join();
-
+        cout << endl;
+        
+        //Genero el Thread y le paso los parametros necesarios
+        myThreads[i] = std::thread(funcThread1, lista, dirEntrada, dirSalida, i);
     }
 
-   //for( int i = 0; i < paralelismo; i++ ) {
-   //    th1.join();
-   //}
-
+    //Itero para ir cerrando todos los joins
+    for (int i=0; i < paralelismo ; i++){
+        myThreads[i].join();
+    }
 
     return EXIT_SUCCESS;
 }

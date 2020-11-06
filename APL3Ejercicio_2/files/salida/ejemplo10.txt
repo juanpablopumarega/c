@@ -1,7 +1,0 @@
-Hora de inicio: Thu Nov  5 00:51:21 2020
-Numero de thread: 3
-vocales: 0
-consonantes: 0
-otra cosa: 0
-Hora de fin: Thu Nov  5 00:51:21 2020
-

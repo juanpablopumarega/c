@@ -1,7 +1,0 @@
-Hora de inicio: Thu Nov  5 00:51:21 2020
-Numero de thread: 2
-vocales: 39
-consonantes: 57
-otra cosa: 16
-Hora de fin: Thu Nov  5 00:51:21 2020
-
