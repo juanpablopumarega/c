@@ -161,7 +161,7 @@ string drop(string tableName) {
 
 }
 
-list<claveValor> ordenarRegistro(string schema, list<claveValor> registro) {
+bool validarCampos(string schema, list<claveValor> registro) {
 
         ifstream MyReadFile(schema);
         string cadena;
@@ -170,26 +170,71 @@ list<claveValor> ordenarRegistro(string schema, list<claveValor> registro) {
         list<claveValor>::iterator iteradorDeSchema;
         list<claveValor>::iterator iteradorDeRegistro;
         
+
+        while(getline(MyReadFile,cadena)){
+          estructura.nombreCampo=cadena;
+          schemaDeTabla.push_back(estructura);
+        }
+
+        iteradorDeRegistro=registro.begin();
+
+        while( iteradorDeRegistro != registro.end()) {
+        
+        int flagCampoInexistente=0; 
+
+            iteradorDeSchema=schemaDeTabla.begin();
+        
+            while( iteradorDeSchema != schemaDeTabla.end()) {
+                
+                if(iteradorDeRegistro->nombreCampo == iteradorDeSchema->nombreCampo) {
+                    flagCampoInexistente=1;
+                }
+        
+                iteradorDeSchema++;
+            }
+
+        if(!flagCampoInexistente){
+            return false;
+        }
+
+            iteradorDeRegistro++;
+        }
+
+    return true;
+
+}
+
+
+list<claveValor> ordenarRegistro(string schema, list<claveValor> registro) {
+
+        ifstream MyReadFile(schema);
+        string cadena;
+        claveValor estructura;
+        list<claveValor> schemaDeTabla;
+        list<claveValor>::iterator iteradorDeSchema;
+        list<claveValor>::iterator iteradorDeRegistro;
+        int flagCampoInexistente=0;
+
         while(getline(MyReadFile,cadena)){
           estructura.nombreCampo=cadena;
           schemaDeTabla.push_back(estructura);
         }
 
         iteradorDeSchema=schemaDeTabla.begin();
-
+        
         while( iteradorDeSchema != schemaDeTabla.end()) {
-
+        
             iteradorDeRegistro=registro.begin();
-
+        
             while( iteradorDeRegistro != registro.end()) {
                 
                 if(iteradorDeRegistro->nombreCampo == iteradorDeSchema->nombreCampo) {
                     iteradorDeSchema->valor = iteradorDeRegistro->valor;
                 }
-
+        
                 iteradorDeRegistro++;
             }
-
+        
             iteradorDeSchema++;
         }
 
@@ -197,7 +242,7 @@ list<claveValor> ordenarRegistro(string schema, list<claveValor> registro) {
 
 }
 
-string agregarRegistroATabla(string tableName, list<claveValor> listaOrdenada, string primaryKey) {
+string agregarRegistroATabla(string tableName, string registroAInsertar, string primaryKey) {
     
     ifstream lectura;
     lectura.open(tableName,ios::in);
@@ -215,7 +260,7 @@ string agregarRegistroATabla(string tableName, list<claveValor> listaOrdenada, s
         {
             if(columna == 0 && dato == primaryKey) {
                 lectura.close();
-                return "ERROR: Primary Key duplicada, no se pudo insertar.";
+                return "ERROR: Primary Key duplicada: " + primaryKey + ", no se pudo insertar.";
             }
         }  
     }
@@ -224,28 +269,7 @@ string agregarRegistroATabla(string tableName, list<claveValor> listaOrdenada, s
 
     ofstream escritura;
     escritura.open(tableName.c_str(),ios::app);
-
-    list<claveValor>::iterator iteradorDeSchema;
-    int n=1;
-
-    cout << "abri el archivo" << endl;
-
-    escritura<<"Holamundoquetal"<<endl;
-
-    //while( iteradorDeSchema != listaOrdenada.end())  {
-    //
-    //    escritura<<iteradorDeSchema->valor;
-    //
-    //    if(listaOrdenada.size() == n) {
-    //        escritura<<endl;
-    //    } else {
-    //        escritura<<";";
-    //    }
-    //
-    //    iteradorDeSchema++;
-    //    n++;
-    //}
-
+    escritura<<registroAInsertar<<endl;
     escritura.close();
 
     return "Registro insertado correctamente";
@@ -257,47 +281,47 @@ string add(string tableName, list<claveValor> registro) {
     string schema = "./schemas/" + tableName + ".schema";
     string tabla = "./tablas/" + tableName + ".dat";
     list<claveValor>::iterator iteradorDeSchema;
-    list<claveValor> listaOrdenada = ordenarRegistro(schema, registro);
 
-    iteradorDeSchema=listaOrdenada.begin();
-
-    while( iteradorDeSchema != listaOrdenada.end())  {
-        cout << "Nombre campo: " << iteradorDeSchema->nombreCampo << endl;    
-        cout << "valor del campo: " << iteradorDeSchema->valor << endl;    
-        iteradorDeSchema++;
+    if(!validarCampos(schema, registro)) {
+        return "ERROR: Campos invalidos, por favor revisar";
     }
+
+    list<claveValor> listaOrdenada = ordenarRegistro(schema, registro);
 
     iteradorDeSchema=listaOrdenada.begin();
         
     int n=1;
+    int flag = 1;
+    string clavePrimaria;
 
-    string registro;
+    string registroAInsertar;
 
     while( iteradorDeSchema != listaOrdenada.end())  {
-        cout << iteradorDeSchema->valor;
-        if(listaOrdenada.size() == n) {
-            cout << endl;
-        } else {
-            cout << ";";
+        registroAInsertar  += iteradorDeSchema->valor;
+
+        if(flag) {
+            clavePrimaria = iteradorDeSchema->valor;
+            flag = 0;
         }
+
+        if(listaOrdenada.size() != n) {
+            registroAInsertar  += ";";
+        }
+
         iteradorDeSchema++;
         n++;
     }
 
-
-    return agregarRegistroATabla(tabla,listaOrdenada,"99");
+    return agregarRegistroATabla(tabla,registroAInsertar,clavePrimaria);
 
 }
 
 
 
 
-
-
-
 int main(int argc, char *argv[]){
 
-    cout << find("producto","nombre_producto","producto3") << endl;
+    //cout << find("producto","nombre_producto","producto3") << endl;
     //cout << "Removiendo registro..." << endl;
     //cout << remove("producto","nombre_producto","producto3") << endl;
     //cout << find("producto","nombre_producto","producto3") << endl;
@@ -316,7 +340,7 @@ int main(int argc, char *argv[]){
     hashmap.valor="prueba de ADD";
     registro.push_back(hashmap);
     hashmap.nombreCampo="id_producto";
-    hashmap.valor="99";
+    hashmap.valor="98";
     registro.push_back(hashmap);
 
     cout << add("producto",registro) << endl;
