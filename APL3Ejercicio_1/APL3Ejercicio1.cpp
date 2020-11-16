@@ -5,9 +5,13 @@
 // Nombre Script:    APL3Ejercicio1.cpp                 
 // Ejemplo de uso:   ./APL3Ejercicio1.cpp 3             
 // Grupo 2                                             
+// Juarez Miguel                         DNI:38530113
+// Grassi Jonatan                        DNI:40077893
 // Lopez Pumarega Juan Pablo             DNI:34593023  
-// Miranda Andres                        DNI:32972232  
+// Miranda Andres                        DNI:32972232
+// Salerti Natalia                       DNI:41559796
 //------------------------------------------------------------------------------------------------------------------
+
 
 #include <iostream>
 #include <stdlib.h>
