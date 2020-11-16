@@ -1,12 +1,15 @@
 //------------------------------------------------------------------------------------------------------------------
 // APL:              3                                 
-// Ejercicio:        1                                 
+// Ejercicio:        4                                 
 // Entrega N°:       1                                 
-// Nombre Script:    APL3Ejercicio4.cpp                 
+// Nombre Script:    gdc.cpp                 
 // Ejemplo de uso:                              
 // Grupo 2                                             
-// Lopez Pumarega Juan Pablo             DNI:34593023  
-// Miranda Andres                        DNI:32972232  
+// Juarez Miguel                         DNI:38530113
+// Grassi Jonatan                        DNI:40077893
+// Lopez Pumarega Juan Pablo             DNI:34593023
+// Miranda Andres                        DNI:32972232
+// Salerti Natalia                       DNI:41559796
 //------------------------------------------------------------------------------------------------------------------
 
 #include <iostream>
@@ -28,13 +31,7 @@ typedef struct {
 } claveValor;
 
 void ayuda(){
-    //cout << "-------------------------------------------------------" << endl;
-    //cout << "\t- Ayuda del Script APL3Ejercicio1.cpp ..." << endl;
-    //cout << "\t- Nombre Script:     ./APL3Ejercicio1.sh " << endl;
-    //cout << "\t- Ejemplo de uso:    ./APL1Ejercicio2.cpp 3" << endl;
-    //cout << "\t- N - [Required]     Numero entero entre 1 y 5 que indicará el nivel del arbol a generar" << endl;
-    //cout << "\t- Fin de la ayuda... espero te sirva!" << endl;
-    //cout << "-------------------------------------------------------" << endl;
+    //
 }
 
 void signal_handler(int signal_num) { 
@@ -499,83 +496,22 @@ int main(int argc, char *argv[]){
 
     signal(SIGUSR1,signal_handler);
 
-    mkfifo("./fifo/clienteServidor",0666);
+    mkfifo("/tmp/clienteServidor",0666);
     
     while (1) {
         char contenido[1024];
 
-        int fifoClienteServidor = open("./fifo/clienteServidor", O_RDONLY);
+        int fifoClienteServidor = open("/tmp/clienteServidor", O_RDONLY);
         read(fifoClienteServidor,contenido,sizeof(contenido));
         close(fifoClienteServidor);
-        cout << "Mensaje recibido del CLIENTE: " << contenido << endl;
+        //cout << "Mensaje recibido del CLIENTE: " << contenido << endl;
 
         string respuesta = realizarAccion(string(contenido));
 
-        fifoClienteServidor = open("./fifo/clienteServidor", O_WRONLY);
+        fifoClienteServidor = open("/tmp/clienteServidor", O_WRONLY);
         write(fifoClienteServidor,respuesta.c_str(),strlen(respuesta.c_str())+1);
         close(fifoClienteServidor);
     }
-
-    
-
-    //FIN DE LA CONEXION
-
-
-    ////CREACION DE LA TABLA PERSONA
-    //list<string> tabla;
-    //tabla.push_back("id");
-    //tabla.push_back("nombre");
-    //tabla.push_back("apellido");
-    //cout << create("persona",tabla) << endl;
-
-    ////INSERTAR REGISTRO 1
-    //claveValor hashmap;
-    //list<claveValor> registro;
-    //hashmap.nombreCampo="nombre";
-    //hashmap.valor="pepe";
-    //registro.push_back(hashmap);
-    //hashmap.nombreCampo="id";
-    //hashmap.valor="5";
-    //registro.push_back(hashmap);
-    //hashmap.nombreCampo="apellido";
-    //hashmap.valor="pig";
-    //registro.push_back(hashmap);    
-    //cout << add("persona",registro) << endl;
-
-    ////INSERTAR REGISTRO 2
-    //list<claveValor> registro2;
-    //hashmap.nombreCampo="nombre";
-    //hashmap.valor="pepa";
-    //registro2.push_back(hashmap);
-    //hashmap.nombreCampo="id";
-    //hashmap.valor="6";
-    //registro2.push_back(hashmap);
-    //hashmap.nombreCampo="apellido";
-    //hashmap.valor="pig";
-    //registro2.push_back(hashmap);    
-    //cout << add("persona",registro2) << endl;
-
-    ////REGISTRO DUPLICADO
-    //cout << add("persona",registro2) << endl;
-
-    //sleep(30);
-
-    ////FIND DE REGISTRO
-    //cout << find("persona","id","5") << endl;
-
-    ////FIND DE REGISTRO QUE NO EXISTE EL VALOR
-    //cout << find("persona","id","10") << endl;
-
-    ////FIND DE REGISTRO QUE NO EXISTE EL CAMPO
-    //cout << find("persona","otro","10") << endl;
-
-    ////REMOVE REGISTRO POR CAMPO IGUAL
-    //cout << remove("persona","apellido","pig") << endl;
-
-    //sleep(30);
-
-    ////DROP DE TABLA PERSONA
-    //cout << drop("persona") << endl;
     
     return EXIT_SUCCESS;
 }

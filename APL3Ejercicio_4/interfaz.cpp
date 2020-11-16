@@ -1,12 +1,15 @@
 //------------------------------------------------------------------------------------------------------------------
 // APL:              3                                 
-// Ejercicio:        1                                 
+// Ejercicio:        4                                 
 // Entrega N°:       1                                 
-// Nombre Script:    APL3Ejercicio4.cpp                 
+// Nombre Script:    interfaz.cpp                 
 // Ejemplo de uso:                              
 // Grupo 2                                             
-// Lopez Pumarega Juan Pablo             DNI:34593023  
-// Miranda Andres                        DNI:32972232  
+// Juarez Miguel                         DNI:38530113
+// Grassi Jonatan                        DNI:40077893
+// Lopez Pumarega Juan Pablo             DNI:34593023
+// Miranda Andres                        DNI:32972232
+// Salerti Natalia                       DNI:41559796
 //------------------------------------------------------------------------------------------------------------------
 
 #include <iostream>
@@ -144,11 +147,11 @@ int main(int argc, char *argv[]){
             //INICIANDO LA CONEXION DE FIFO
             char respuesta[1000];
 
-            int fifoClienteServidor = open("./fifo/clienteServidor", 01);
+            int fifoClienteServidor = open("/tmp/clienteServidor", O_WRONLY);
             write(fifoClienteServidor,accion.c_str(),strlen(accion.c_str())+1);
             close(fifoClienteServidor);
 
-            fifoClienteServidor = open("./fifo/clienteServidor", 00);
+            fifoClienteServidor = open("/tmp/clienteServidor", O_RDONLY);
             read(fifoClienteServidor,respuesta,sizeof(respuesta));
             close(fifoClienteServidor);
 
