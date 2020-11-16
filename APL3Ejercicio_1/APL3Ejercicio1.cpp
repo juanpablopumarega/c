@@ -2,8 +2,7 @@
 // APL:              3                                 
 // Ejercicio:        1                                 
 // Entrega N°:       1                                 
-// Nombre Script:    APL3Ejercicio1.cpp                 
-// Ejemplo de uso:   ./APL3Ejercicio1.cpp 3             
+// Nombre Script:    APL3Ejercicio1.cpp             
 // Grupo 2                                             
 // Juarez Miguel                         DNI:38530113
 // Grassi Jonatan                        DNI:40077893
@@ -37,7 +36,7 @@ void ayuda(){
     cout << "-------------------------------------------------------" << endl;
     cout << "\t- Ayuda del Script APL3Ejercicio1.cpp ..." << endl;
     cout << "\t- Nombre Script:     ./APL3Ejercicio1    " << endl;
-    cout << "\t- Ejemplo de uso:    ./APL1Ejercicio2.cpp 3" << endl;
+    cout << "\t- Ejemplo de uso:    ./APL1Ejercicio1.cpp 3" << endl;
     cout << "\t- N - [Required]     Numero entero entre 1 y 5 que indicará el nivel del arbol a generar" << endl;
     cout << "\t- Fin de la ayuda... espero te sirva!" << endl;
     cout << "-------------------------------------------------------" << endl;

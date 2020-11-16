@@ -2,8 +2,7 @@
 // APL:              3                                 
 // Ejercicio:        2                                 
 // Entrega N°:       1                                 
-// Nombre Script:    APL3Ejercicio2.cpp                 
-// Ejemplo de uso:   ./APL1Ejercicio2.cpp 3             
+// Nombre Script:    APL3Ejercicio2.cpp             
 // Grupo 2                                             
 // Juarez Miguel                         DNI:38530113
 // Grassi Jonatan                        DNI:40077893
@@ -318,3 +317,5 @@ int main(int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
+
+//FIN
