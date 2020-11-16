@@ -6,7 +6,11 @@
 all: interfaz servidor
 
 interfaz:
-	g++ -o interfaz interfaz.cpp;
+	g++ -o interfaz interfaz.cpp
 
 servidor:
-	g++ -o gdc gdc.cpp;
+	g++ -o gdc gdc.cpp
+
+clear:
+	rm -f interfaz
+	rm -f gdc

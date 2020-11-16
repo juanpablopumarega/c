@@ -18,11 +18,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include<signal.h>
+#include <signal.h>
 
 using namespace std;
-
-
 
 typedef struct {
 	string nombreCampo;
@@ -39,9 +37,11 @@ void ayuda(){
     //cout << "-------------------------------------------------------" << endl;
 }
 
-void sig_handler(int signum){
-  printf("Inside handler function\n");
-}
+void signal_handler(int signal_num) { 
+   cout << "Se recibió la señal (" << signal_num << "). Se interrumpe el proceso. \n"; 
+   unlink("./fifo/clienteServidor");
+   exit(signal_num);   
+} 
 
 string buscarEnTabla(string tableName, int nroColumna, string datoABuscar) {
     
@@ -49,7 +49,7 @@ string buscarEnTabla(string tableName, int nroColumna, string datoABuscar) {
     lectura.open(tableName,ios::in);
 
     if(lectura.fail()){
-        return "ERROR: No se pudo acceder a la tabla " + (string)tableName + ". Intentelo nuevamente";
+        return "ERROR: No se pudo acceder a la tabla " + tableName + ". Intentelo nuevamente";
     }
 
     for (std::string linea; std::getline(lectura, linea); )
@@ -354,8 +354,8 @@ string create(string tableName, list<string> campos) {
 
 int main(int argc, char *argv[]){
 
+    signal(SIGUSR1,signal_handler);
 
-    //signal(SIGUSR1,sig_handler);
     //INICIANDO LA CONEXION DE FIFO
     char contenido[1024];
     char respuesta[] = "Soy tu padre";
@@ -372,18 +372,19 @@ int main(int argc, char *argv[]){
         write(fifoClienteServidor,respuesta,strlen(respuesta));
         close(fifoClienteServidor);
     }
+
     
-    
-    
+
     //FIN DE LA CONEXION
-//
+
+
     ////CREACION DE LA TABLA PERSONA
     //list<string> tabla;
     //tabla.push_back("id");
     //tabla.push_back("nombre");
     //tabla.push_back("apellido");
     //cout << create("persona",tabla) << endl;
-//
+
     ////INSERTAR REGISTRO 1
     //claveValor hashmap;
     //list<claveValor> registro;
@@ -397,7 +398,7 @@ int main(int argc, char *argv[]){
     //hashmap.valor="pig";
     //registro.push_back(hashmap);    
     //cout << add("persona",registro) << endl;
-    //
+
     ////INSERTAR REGISTRO 2
     //list<claveValor> registro2;
     //hashmap.nombreCampo="nombre";
@@ -410,26 +411,26 @@ int main(int argc, char *argv[]){
     //hashmap.valor="pig";
     //registro2.push_back(hashmap);    
     //cout << add("persona",registro2) << endl;
-//
+
     ////REGISTRO DUPLICADO
     //cout << add("persona",registro2) << endl;
-//
+
     //sleep(30);
-//
+
     ////FIND DE REGISTRO
     //cout << find("persona","id","5") << endl;
-//
+
     ////FIND DE REGISTRO QUE NO EXISTE EL VALOR
     //cout << find("persona","id","10") << endl;
-//
+
     ////FIND DE REGISTRO QUE NO EXISTE EL CAMPO
     //cout << find("persona","otro","10") << endl;
-//
+
     ////REMOVE REGISTRO POR CAMPO IGUAL
     //cout << remove("persona","apellido","pig") << endl;
-//
+
     //sleep(30);
-//
+
     ////DROP DE TABLA PERSONA
     //cout << drop("persona") << endl;
     

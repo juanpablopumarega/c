@@ -24,16 +24,16 @@ using namespace std;
 int main(int argc, char *argv[]){
     
     //INICIANDO LA CONEXION DE FIFO
-    char contenido[] = "hola que hace";
-    //mkfifo("./fifo/clienteServidor",0600);
-    int fifoClienteServidor = open("./fifo/clienteServidor", O_WRONLY);
-    write(fifoClienteServidor,contenido,strlen(contenido));
-    close(fifoClienteServidor);
-    fifoClienteServidor = open("./fifo/clienteServidor", O_RDONLY);
-    read(fifoClienteServidor,contenido,sizeof(contenido));
-    cout << contenido << endl;
-    close(fifoClienteServidor);
-    
+        char contenido[] = "hola que hace";
+        int fifoClienteServidor = open("./fifo/clienteServidor", 01);
+        write(fifoClienteServidor,contenido,strlen(contenido));
+        close(fifoClienteServidor);
+        
+        fifoClienteServidor = open("./fifo/clienteServidor", 00);
+        read(fifoClienteServidor,contenido,sizeof(contenido));
+        cout << contenido << endl;
+        close(fifoClienteServidor);
     //FIN DE LA CONEXION
+
     return EXIT_SUCCESS;
 }
