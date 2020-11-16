@@ -303,6 +303,10 @@ string add(string tableName, list<claveValor> registro) {
         registroAInsertar  += iteradorDeSchema->valor;
 
         if(flag) {
+            if(iteradorDeSchema->valor == ""){
+                return "ERROR: El campo " + iteradorDeSchema->nombreCampo + " (PK) no debe estar vacio.";
+            }
+
             clavePrimaria = iteradorDeSchema->valor;
             flag = 0;
         }
