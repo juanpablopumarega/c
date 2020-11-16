@@ -255,13 +255,6 @@ int main(int argc, char *argv[])
         archivosXThread=(n-2)/paralelismo;
     }
 
-    cout << "---------------------------------------" << endl;
-    cout << "La cantidad de archivos es: \t" << n-2 << endl;
-    cout << "El nivel de paralelismo es: \t" << paralelismo << endl;
-    cout << "Archivos por Thread: \t\t" << archivosXThread << endl;
-    cout << "Proceso padre: \t\t\t" << getpid() << endl;
-    cout << "---------------------------------------" << endl;
-
     //Itero por cantidad de threads
     for( int i = 0; i < paralelismo; i++ ) {
         
