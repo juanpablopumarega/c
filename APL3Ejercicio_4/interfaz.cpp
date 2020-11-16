@@ -23,7 +23,14 @@ using namespace std;
 
 int main(int argc, char *argv[]){
     
-    //INICIANDO LA CONEXION DE FIFO
+    string accion;
+
+    cout << "INGRESE COMANDO: ";
+    cin >> accion;
+
+    while(accion != "quit"){
+
+        //INICIANDO LA CONEXION DE FIFO
         char contenido[] = "hola que hace";
         int fifoClienteServidor = open("./fifo/clienteServidor", 01);
         write(fifoClienteServidor,contenido,strlen(contenido));
@@ -33,7 +40,16 @@ int main(int argc, char *argv[]){
         read(fifoClienteServidor,contenido,sizeof(contenido));
         cout << contenido << endl;
         close(fifoClienteServidor);
-    //FIN DE LA CONEXION
+        //FIN DE LA CONEXION
+
+        cout << "INGRESE COMANDO: ";
+        cin >> accion;
+
+    }
+    
+    
+
+
 
     return EXIT_SUCCESS;
 }
