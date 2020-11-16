@@ -495,8 +495,48 @@ string realizarAccion(string accion) {
     return "ERROR: Ha ocurrido un error inesperado, por favor intentelo mas tarde nuevamente";
 }
 
+void help()
+{
+    cout << "------------------------------------------------------------------------" << endl;
+    cout << "------------------------------------------------------------------------" << endl;
+    cout << "SERVIDOR de la Base de datos creada en c++" << endl;
+    cout << " - Admitira un Cliente que se conectara a traves de FIFO." << endl;
+    cout << " - Por cada creacion de tabla se creara un archivo .dat en ./tablas" << endl;
+    cout << " - Por cada creacion de tabla se creara un archivo .schema en ./schemas con la estructura de la tabla deseada" << endl;
+    cout << " - Las acciones permitidas por el servidor son las siguientes:" << endl;
+    cout << "\t - CREATE COLLECTION tablename campo1 campo2 [campo N]." << endl;
+    cout << "\t\tCreara la tabla tablename con los campos indicados y el primero sera la PK" << endl;
+    cout << "\t - DROP COLLECTION tablename" << endl;
+    cout << "\t\tBorrara la tabla y el schema relacionado a la misma" << endl;
+    cout << "\t - ADD IN tablename campo1=valor campo2=valor" << endl;
+    cout << "\t\tAgregara un registro a la tabla siempre y cuando la PK no este duplicada o vacia" << endl;
+    cout << "\t - FIND tablename columnName valorbuscado" << endl;
+    cout << "\t\tDevolvera el registro de la tabla solicitado" << endl;
+    cout << "\t - REMOVE tablename columnName valorAEliminar" << endl;
+    cout << "\t\tBorrara un registro de la tabla segun columna y valor" << endl;
+    cout << "------------------------------------------------------------------------" << endl;
+    cout << "------------------------------------------------------------------------" << endl;
+}
 
 int main(int argc, char *argv[]){
+
+    if (argc != 1)
+    {
+        if (argc > 2) {
+            cout << "La cantidad de parametros es incorrecta";
+            return 1;
+        }
+        else if (!strcmp(argv[1],"--help") || !strcmp(argv[1], "-h")) {
+            help();
+            return 0;
+        }
+        else {
+            cout << "El parametro ingresado es incorrecto";
+            return 1;
+        }
+    }
+
+
 
     signal(SIGUSR1,signal_handler);
 
