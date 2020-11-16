@@ -5,8 +5,11 @@
 // Nombre Script:    APL3Ejercicio2.cpp                 
 // Ejemplo de uso:   ./APL1Ejercicio2.cpp 3             
 // Grupo 2                                             
-// Lopez Pumarega Juan Pablo             DNI:34593023  
-// Miranda Andres                        DNI:32972232  
+// Juarez Miguel                         DNI:38530113
+// Grassi Jonatan                        DNI:40077893
+// Lopez Pumarega Juan Pablo             DNI:34593023
+// Miranda Andres                        DNI:32972232
+// Salerti Natalia                       DNI:41559796
 //------------------------------------------------------------------------------------------------------------------
 
 #include <iostream>
@@ -195,8 +198,20 @@ int main(int argc, char *argv[])
             ayuda();
             return EXIT_SUCCESS;
         } else {
-            if(atoi(argv[1])<1 || atoi(argv[1])>20) {
-                cout << "Se espera un numero natural menos o igual a 5." << endl;
+            if(atoi(argv[1])<0) {
+                cout << "Se espera un numero natural mayor a 0." << endl;
+                cout << "Llamando a la ayuda..." << endl;
+                ayuda();
+                return EXIT_SUCCESS;
+            }
+            if(!is_dir(argv[2])) {
+                cout << argv[2] <<": No es un directorio de entrada valido." << endl;
+                cout << "Llamando a la ayuda..." << endl;
+                ayuda();
+                return EXIT_SUCCESS;
+            }
+            if(!is_dir(argv[3])) {
+                cout << argv[3] <<": No es un directorio de salida valido." << endl;
                 cout << "Llamando a la ayuda..." << endl;
                 ayuda();
                 return EXIT_SUCCESS;
@@ -204,7 +219,7 @@ int main(int argc, char *argv[])
         }
     }
     //Fin de la validación de parametros.
-
+    
     //Declaración de variables utilizadas.
     int paralelismo=atoi(argv[1]), n=0, r=0, resto=0;
     char * dirEntrada=argv[2];

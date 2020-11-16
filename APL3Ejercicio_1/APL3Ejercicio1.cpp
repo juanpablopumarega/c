@@ -7,7 +7,7 @@
 // Grupo 2                                             
 // Juarez Miguel                         DNI:38530113
 // Grassi Jonatan                        DNI:40077893
-// Lopez Pumarega Juan Pablo             DNI:34593023  
+// Lopez Pumarega Juan Pablo             DNI:34593023
 // Miranda Andres                        DNI:32972232
 // Salerti Natalia                       DNI:41559796
 //------------------------------------------------------------------------------------------------------------------
@@ -36,7 +36,7 @@ void imprimirNivel(int nivel, int nodo, int arbol[], int miPid){
 void ayuda(){
     cout << "-------------------------------------------------------" << endl;
     cout << "\t- Ayuda del Script APL3Ejercicio1.cpp ..." << endl;
-    cout << "\t- Nombre Script:     ./APL3Ejercicio1.sh " << endl;
+    cout << "\t- Nombre Script:     ./APL3Ejercicio1    " << endl;
     cout << "\t- Ejemplo de uso:    ./APL1Ejercicio2.cpp 3" << endl;
     cout << "\t- N - [Required]     Numero entero entre 1 y 5 que indicará el nivel del arbol a generar" << endl;
     cout << "\t- Fin de la ayuda... espero te sirva!" << endl;
