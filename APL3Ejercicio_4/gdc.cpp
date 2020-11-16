@@ -149,7 +149,7 @@ string remove(string tableName, string columnName, string value) {
 
     int nroColumna = obtenerNroColumna(schema, columnName);
 
-    if(nroColumna < 0)
+    if(nroColumna == -1)
         return "ERROR: Columna " + columnName + " no encontrada en la tabla";
 
     return eliminarRegistroPorclave(tabla, nroColumna, value);
@@ -282,7 +282,6 @@ string agregarRegistroATabla(string tableName, string registroAInsertar, string 
     return "Registro insertado correctamente";
 }
 
-
 string add(string tableName, list<claveValor> registro) {
 
     string schema = "./schemas/" + tableName + ".schema";
@@ -323,8 +322,6 @@ string add(string tableName, list<claveValor> registro) {
 
 }
 
-
-
 string create(string tableName, list<string> campos) {
     string schema = "./schemas/" + tableName + ".schema";
     string tabla = "./tablas/" + tableName + ".dat";
@@ -351,25 +348,171 @@ string create(string tableName, list<string> campos) {
     return "Se creo la tabla "+ tableName;
 }
 
+string ejecutarADD(string sentencia) {
+
+    std::stringstream registro(sentencia);
+    std::string dato;
+
+    size_t found = 0;
+
+    string tableName;
+    list<claveValor> listaRegistro;
+    claveValor hashmap;
+
+    for (int columna = 0; std::getline(registro, dato, ' '); ++columna) {
+
+        if(columna == 2) {
+            tableName = dato; 
+        }
+
+       if(columna > 2) {
+            found=dato.find("=");
+
+            if (found != string::npos) {
+                hashmap.nombreCampo=dato.substr(0, found);
+                hashmap.valor=dato.substr(found+1);
+                listaRegistro.push_back(hashmap);
+            }
+       }
+
+    }
+
+    return add(tableName, listaRegistro);
+}
+
+string ejecutarREMOVE(string sentencia) {
+
+    std::stringstream registro(sentencia);
+    std::string dato;
+
+    string tableName;
+    string columnName;
+    string value;
+
+
+    for (int columna = 0; std::getline(registro, dato, ' '); ++columna) {
+
+        if(columna == 1) {
+            tableName = dato; 
+        }
+
+        if(columna == 2) {
+            columnName = dato; 
+        }
+
+        if(columna == 3) {
+            value = dato; 
+        }
+
+    }
+
+    return remove(tableName, columnName, value);
+}
+
+string ejecutarDROP(string sentencia) {
+
+    std::stringstream registro(sentencia);
+    std::string dato;
+    string tableName;
+
+    for (int columna = 0; std::getline(registro, dato, ' '); ++columna) {
+        if(columna == 2) {
+            tableName = dato; 
+        }
+    }
+
+    return drop(tableName);
+}
+
+string ejecutarFIND(string sentencia) {
+
+    std::stringstream registro(sentencia);
+    std::string dato;
+
+    string tableName;
+    string columnName;
+    string value;
+
+
+    for (int columna = 0; std::getline(registro, dato, ' '); ++columna) {
+
+        if(columna == 1) {
+            tableName = dato; 
+        }
+
+        if(columna == 2) {
+            columnName = dato; 
+        }
+
+        if(columna == 3) {
+            value = dato; 
+        }
+
+    }
+
+    return find(tableName, columnName, value);
+}
+
+string ejecutarCREATE(string sentencia) {
+
+    std::stringstream registro(sentencia);
+    std::string dato;
+
+    size_t found = 0;
+
+    string tableName;
+    list<string> campos;
+
+    for (int columna = 0; std::getline(registro, dato, ' '); ++columna) {
+
+        if(columna == 2) {
+            tableName = dato; 
+        }
+
+       if(columna > 2) {
+            campos.push_back(dato);  
+       }
+
+    }
+
+    return create(tableName, campos);
+}
+
+string realizarAccion(string accion) {
+
+    std::stringstream registro(accion);
+    std::string dato;
+
+    std::getline(registro, dato, ' ');
+
+    if(dato == "ADD") { return ejecutarADD(accion); }
+    if(dato == "REMOVE") { return ejecutarREMOVE(accion); }
+    if(dato == "DROP") { return ejecutarDROP(accion); }
+    if(dato == "CREATE") { return ejecutarCREATE(accion); }
+    if(dato == "FIND") { return ejecutarFIND(accion); }
+
+    return "ERROR: Ha ocurrido un error inesperado, por favor intentelo mas tarde nuevamente";
+}
+
 
 int main(int argc, char *argv[]){
 
     signal(SIGUSR1,signal_handler);
 
-    //INICIANDO LA CONEXION DE FIFO
-    char contenido[1024];
-    char respuesta[] = "Soy tu padre";
     mkfifo("./fifo/clienteServidor",0666);
     
     while (1) {
+        char contenido[1024];
+
         int fifoClienteServidor = open("./fifo/clienteServidor", O_RDONLY);
         read(fifoClienteServidor,contenido,sizeof(contenido));
-        cout << contenido << endl;
         close(fifoClienteServidor);
+        cout << "Mensaje recibido del CLIENTE: " << contenido << endl;
 
-        
+        string respuesta = realizarAccion(string(contenido));
+
         fifoClienteServidor = open("./fifo/clienteServidor", O_WRONLY);
-        write(fifoClienteServidor,respuesta,strlen(respuesta));
+        write(fifoClienteServidor,respuesta.c_str(),strlen(respuesta.c_str())+1);
         close(fifoClienteServidor);
     }
 

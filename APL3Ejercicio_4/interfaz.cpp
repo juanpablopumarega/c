@@ -35,8 +35,6 @@ bool isValidADD(string sentencia) {
             return false; //si el ADD no esta seguido del IN
         }
 
-        cout << "nro columna: " << columna << "nombre: " << dato << endl;
-
        if(columna == 2){
             found=dato.find("=");
             
@@ -72,7 +70,8 @@ bool isValidREMOVEorFIND(string sentencia) {
 
     for (columna = 0; std::getline(registro, dato, ' '); ++columna) {}
 
-    if(columna != 3){
+    if(columna != 4){
+        cout << columna << endl;
         return false;
     }
 
@@ -131,7 +130,6 @@ bool isValidSentence(string sentencia){
     return true;
 }
     
-
 int main(int argc, char *argv[]){
     
     string accion;
@@ -144,15 +142,17 @@ int main(int argc, char *argv[]){
         if(isValidSentence(accion)){
 
             //INICIANDO LA CONEXION DE FIFO
-            //char contenido[] = "hola que hace";
-            //int fifoClienteServidor = open("./fifo/clienteServidor", 01);
-            //write(fifoClienteServidor,contenido,strlen(contenido));
-            //close(fifoClienteServidor);
+            char respuesta[1000];
 
-            //fifoClienteServidor = open("./fifo/clienteServidor", 00);
-            //read(fifoClienteServidor,contenido,sizeof(contenido));
-            //cout << contenido << endl;
-            //close(fifoClienteServidor);
+            int fifoClienteServidor = open("./fifo/clienteServidor", 01);
+            write(fifoClienteServidor,accion.c_str(),strlen(accion.c_str())+1);
+            close(fifoClienteServidor);
+
+            fifoClienteServidor = open("./fifo/clienteServidor", 00);
+            read(fifoClienteServidor,respuesta,sizeof(respuesta));
+            close(fifoClienteServidor);
+
+            cout << "Mensaje recibido del SERVER: " << respuesta << endl;
             //FIN DE LA CONEXION
 
         } else {
@@ -161,9 +161,7 @@ int main(int argc, char *argv[]){
 
         cout << "INGRESE COMANDO: ";
         getline(cin, accion);
-
     }
-    
 
     return EXIT_SUCCESS;
 }
