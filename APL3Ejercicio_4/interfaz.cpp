@@ -130,7 +130,7 @@ bool isValidSentence(string sentencia){
     if(dato == "CREATE") { return isValidCREATE(sentencia); }
     if(dato == "FIND") { return isValidREMOVEorFIND(sentencia); }
 
-    return true;
+    return false;
 }
     
 int main(int argc, char *argv[]){
@@ -147,11 +147,11 @@ int main(int argc, char *argv[]){
             //INICIANDO LA CONEXION DE FIFO
             char respuesta[1000];
 
-            int fifoClienteServidor = open("/tmp/clienteServidor", O_WRONLY);
+            int fifoClienteServidor = open("/tmp/clienteServidor", 01);
             write(fifoClienteServidor,accion.c_str(),strlen(accion.c_str())+1);
             close(fifoClienteServidor);
 
-            fifoClienteServidor = open("/tmp/clienteServidor", O_RDONLY);
+            fifoClienteServidor = open("/tmp/clienteServidor", 00);
             read(fifoClienteServidor,respuesta,sizeof(respuesta));
             close(fifoClienteServidor);
 
