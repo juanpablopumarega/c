@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
     read(fifoClienteServidor,contenido,sizeof(contenido));
     cout << contenido << endl;
     close(fifoClienteServidor);
-
+    
     //FIN DE LA CONEXION
     return EXIT_SUCCESS;
 }

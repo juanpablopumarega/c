@@ -18,8 +18,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include<signal.h>
 
 using namespace std;
+
 
 
 typedef struct {
@@ -35,6 +37,10 @@ void ayuda(){
     //cout << "\t- N - [Required]     Numero entero entre 1 y 5 que indicará el nivel del arbol a generar" << endl;
     //cout << "\t- Fin de la ayuda... espero te sirva!" << endl;
     //cout << "-------------------------------------------------------" << endl;
+}
+
+void sig_handler(int signum){
+  printf("Inside handler function\n");
 }
 
 string buscarEnTabla(string tableName, int nroColumna, string datoABuscar) {
@@ -348,11 +354,12 @@ string create(string tableName, list<string> campos) {
 
 int main(int argc, char *argv[]){
 
+
+    //signal(SIGUSR1,sig_handler);
     //INICIANDO LA CONEXION DE FIFO
     char contenido[1024];
     char respuesta[] = "Soy tu padre";
     mkfifo("./fifo/clienteServidor",0666);
-    
     
     while (1) {
         int fifoClienteServidor = open("./fifo/clienteServidor", O_RDONLY);
