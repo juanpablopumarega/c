@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sched.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -15,9 +16,9 @@
 #include <string>
 #include <signal.h>
 
-#define FIL 2
-#define COL 2
-#define PARFIN 2
+#define FIL 4
+#define COL 4
+#define PARFIN 8
 using namespace std;
 
 void mostrarTablero(char mat[][COL]);
@@ -40,7 +41,13 @@ void handlerSigSigusr1(int sig);
 
 void actualizarTablero(char tablero[][COL], char mat[][COL], int fil, int col);
 
+void* funcionDentroDelHilo(void* pidJuego);
+
+void crearHilo ();
+
 static int SIGUSR1_reciv = 0;
+
+static int finJuego = 0;
 
 int main(int argc, char const *argv[])
 {
@@ -76,7 +83,7 @@ int main(int argc, char const *argv[])
     signal(SIGUSR1, handlerSigSigusr1); //Señal de corte
 
     ///--TABLERO ///
-    int fil1, col1, finJuego;
+    int fil1, col1;
     int fd = shm_open("tablero", O_CREAT | O_RDWR, 0600); //fileDescriptor
     ftruncate(fd, sizeof(char[FIL][COL]));
     char(*tablero)[COL];
@@ -93,8 +100,12 @@ int main(int argc, char const *argv[])
     int *filCol = (int *)mmap(NULL, sizeof(int[2]), PROT_READ | PROT_WRITE, MAP_SHARED, fd2, 0);
     close(fd);
 
-    //signal(SIGINT, SIG_IGN) ignora ctrl+c
+    signal(SIGINT, SIG_IGN); //ignora ctrl+c
     cout << "esperando jugador" << endl;
+    
+    /// Creo hilo para controlar señal de corte
+    //crearHilo ();
+    
     while (!SIGUSR1_reciv)
     {
         inicializarMat(tablero);
@@ -244,4 +255,34 @@ void iniciarJuego(char mat[][COL])
         cantLetras--;
         completoMath++;
     }
+}
+
+void *funcionDentroDelHilo(void* pidJuego) {
+    signal(SIGUSR1, handlerSigSigusr1); //Señal de corte
+
+    pid_t* pid = (pid_t*) pidJuego;
+
+    while(true){
+        while (!SIGUSR1_reciv) {
+            if(finJuego){
+            kill( -*pid, SIGKILL);
+            kill( -getgid(), SIGKILL);
+            }
+            
+        }
+    }
+}
+
+void crearHilo () {
+    
+    // id del hilo
+    pthread_t hilo; 
+    pid_t pidJuego = getgid();
+
+    //
+    pthread_create(&hilo, NULL, &funcionDentroDelHilo, &pidJuego);
+
+    pthread_join(hilo, NULL); 
+    pthread_exit(NULL); 
+
 }

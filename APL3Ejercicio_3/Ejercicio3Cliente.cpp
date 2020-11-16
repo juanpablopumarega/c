@@ -11,10 +11,11 @@
 #include <semaphore.h>
 #include <fcntl.h>
 #include <vector>
+#include <ctime>
 
-#define FIL 2
-#define COL 2
-#define PARFIN 2
+#define FIL 4
+#define COL 4
+#define PARFIN 8
 
 using namespace std;
 
@@ -74,6 +75,10 @@ int main(int argc, char const *argv[])
 
     int finJuego;
     sem_getvalue(semFinJuego, &finJuego);
+    
+    /// Capturo el tiempo a jugar
+    unsigned tiempoInicio, tiempoFin;
+    tiempoInicio = clock();
 
     while (!finJuego)
     {   
@@ -92,7 +97,12 @@ int main(int argc, char const *argv[])
         sem_getvalue(semFinJuego, &finJuego);
     }
     sem_wait(semFinJuego);
-    cout<<"juego finalizado";
+
+    ///Muestro tiempo jugado
+    tiempoInicio = clock();
+    double tiempoJugado = (double(tiempoFin-tiempoInicio)/CLOCKS_PER_SEC);
+    ///Muestro tiempo jugado
+    cout<<"juego finalizado. Tiempo de juego: " << tiempoJugado << endl;
    
 
     //munmap(tablero,sizeof(int[4][4]));  ///Libera Mem
@@ -105,10 +115,13 @@ int main(int argc, char const *argv[])
 
 void ingresarCasillas(int *filcol)
 {
-    cout << "Ingrese fila:";
-    cin >> *filcol;
-    cout << "Ingrese columna:";
-    cin >> *(filcol + 1);
+    do{
+        cout << "Ingrese fila:";
+        cin >> *filcol;
+        cout << "Ingrese columna:";
+        cin >> *(filcol + 1);
+    } while (*filcol > 4 && *filcol < 0 );
+    
 }
 
 void mostrarTablero(char tablero[][COL])
