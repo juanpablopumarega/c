@@ -390,7 +390,6 @@ string ejecutarREMOVE(string sentencia) {
     string columnName;
     string value;
 
-
     for (int columna = 0; std::getline(registro, dato, ' '); ++columna) {
 
         if(columna == 1) {
@@ -433,7 +432,6 @@ string ejecutarFIND(string sentencia) {
     string tableName;
     string columnName;
     string value;
-
 
     for (int columna = 0; std::getline(registro, dato, ' '); ++columna) {
 
@@ -535,8 +533,6 @@ int main(int argc, char *argv[]){
             return 1;
         }
     }
-
-
 
     signal(SIGUSR1,signal_handler);
 
