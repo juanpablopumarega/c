@@ -73,7 +73,7 @@ bool isValidREMOVEorFIND(string sentencia) {
 
     for (columna = 0; std::getline(registro, dato, ' '); ++columna) {}
 
-    if(columna != 4){
+    if(columna != 3){
         cout << columna << endl;
         return false;
     }
@@ -104,10 +104,33 @@ bool isValidCREATE(string sentencia) {
     std::stringstream registro(sentencia);
     std::string dato;
     int columna = 0;
+    list<string> columnName;
+    list<string> duplicated;
 
     for (columna = 0; std::getline(registro, dato, ' '); ++columna) {
         if(columna == 1 && dato != "COLLECTION")
             return false;
+
+        if(columna>2) {
+            
+            if(columnName.size() > 0) {
+                
+                columnName.push_back(dato);
+                
+                //Reviso si existen campos duplicados.
+                columnName.sort();
+                duplicated = columnName;
+                duplicated.unique();
+
+                if(duplicated.size() != columnName.size()){
+                    return false;
+                }
+                //Fin de la revisión de duplicados.
+
+            } else {
+                columnName.push_back(dato);
+            }
+        }
     }
 
     if(columna < 5){

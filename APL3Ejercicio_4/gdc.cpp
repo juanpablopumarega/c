@@ -30,17 +30,13 @@ typedef struct {
     string valor;
 } claveValor;
 
-void ayuda(){
-    //
-}
-
 void signal_handler(int signal_num) { 
    cout << "Se recibió la señal (" << signal_num << "). Se interrumpe el proceso. \n"; 
    unlink("./fifo/clienteServidor");
    exit(signal_num);   
 } 
 
-string buscarEnTabla(string tableName, int nroColumna, string datoABuscar) {
+string buscarEnTabla(string tableName, string datoABuscar) {
     
     ifstream lectura;
     lectura.open(tableName,ios::in);
@@ -56,7 +52,7 @@ string buscarEnTabla(string tableName, int nroColumna, string datoABuscar) {
 
         for (int columna = 0; std::getline(registro, dato, ';'); ++columna)
         {
-            if(columna == nroColumna && dato == datoABuscar) {
+            if(columna == 0 && dato == datoABuscar) {
                 return linea;
             }
         }
@@ -83,23 +79,19 @@ int obtenerNroColumna(string tableName, string nombreCampo) {
         return -1;
 }
 
-string find(string tableName, string columnName, string value) {
+string find(string tableName, string value) {
 
     string schema = "./schemas/" + tableName + ".schema";
     string tabla = "./tablas/" + tableName + ".dat";
-    int nroColumna = obtenerNroColumna(schema, columnName);
 
-    if(nroColumna < 0)
-        return "ERROR: Columna " + columnName + " no encontrada en la tabla";
-
-    return buscarEnTabla(tabla, nroColumna, value);
-
+    return buscarEnTabla(tabla, value);
 }
 
-string eliminarRegistroPorclave(string tableName, int nroColumna, string datoABuscar) {
+string eliminarRegistroPorclave(string tableName, string datoABuscar) {
     
     ifstream lectura;
     lectura.open(tableName,ios::in);
+    int existeRegistro = 0;
 
     string tablaTemporal = tableName + ".tmp";
 
@@ -119,8 +111,9 @@ string eliminarRegistroPorclave(string tableName, int nroColumna, string datoABu
 
         for (int columna = 0; std::getline(registro, dato, ';'); ++columna)
         {
-            if(columna == nroColumna && dato == datoABuscar) {
-               flagDeEscritura=0;
+            if(columna == 0 && dato == datoABuscar) {
+               flagDeEscritura = 0;
+               existeRegistro = 1;
             }
         }
 
@@ -133,24 +126,23 @@ string eliminarRegistroPorclave(string tableName, int nroColumna, string datoABu
     lectura.close();
     temporal.close();
 
-    remove(tableName.c_str());
-    rename(tablaTemporal.c_str(),tableName.c_str());
+    if(existeRegistro) {
+        remove(tableName.c_str());
+        rename(tablaTemporal.c_str(),tableName.c_str());
+    } else {
+        remove(tablaTemporal.c_str());
+        return "ERROR: Fila inexistente";
+    }
 
     return "Registro eliminado de la tabla correctamente..";
 }
 
-string remove(string tableName, string columnName, string value) {
+string remove(string tableName, string value) {
 
     string schema = "./schemas/" + tableName + ".schema";
     string tabla = "./tablas/" + tableName + ".dat";
 
-    int nroColumna = obtenerNroColumna(schema, columnName);
-
-    if(nroColumna == -1)
-        return "ERROR: Columna " + columnName + " no encontrada en la tabla";
-
-    return eliminarRegistroPorclave(tabla, nroColumna, value);
-
+    return eliminarRegistroPorclave(tabla, value);
 }
 
 string drop(string tableName) {
@@ -397,16 +389,12 @@ string ejecutarREMOVE(string sentencia) {
         }
 
         if(columna == 2) {
-            columnName = dato; 
-        }
-
-        if(columna == 3) {
             value = dato; 
         }
 
     }
 
-    return remove(tableName, columnName, value);
+    return remove(tableName, value);
 }
 
 string ejecutarDROP(string sentencia) {
@@ -440,16 +428,12 @@ string ejecutarFIND(string sentencia) {
         }
 
         if(columna == 2) {
-            columnName = dato; 
-        }
-
-        if(columna == 3) {
             value = dato; 
         }
 
     }
 
-    return find(tableName, columnName, value);
+    return find(tableName, value);
 }
 
 string ejecutarCREATE(string sentencia) {
@@ -544,7 +528,6 @@ int main(int argc, char *argv[]){
         int fifoClienteServidor = open("/tmp/clienteServidor", O_RDONLY);
         read(fifoClienteServidor,contenido,sizeof(contenido));
         close(fifoClienteServidor);
-        //cout << "Mensaje recibido del CLIENTE: " << contenido << endl;
 
         string respuesta = realizarAccion(string(contenido));
 
