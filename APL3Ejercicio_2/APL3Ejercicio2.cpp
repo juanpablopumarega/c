@@ -107,7 +107,7 @@ void funcThread1(list<string> lista, char *dirEntrada, char *dirSalida, int nroT
                     vocales++;
                 }
                 else {
-                    if(!isalpha(cadena[i])) {
+                    if(!isalpha(cadena[i]) && cadena[i] != '\n' && cadena[i] != ' ' && cadena[i] != '\t') {
                         otrochar++;
                     }
                     else {
@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
             ayuda();
             return EXIT_SUCCESS;
         } else {
-            if(atoi(argv[1])<0) {
+            if(atoi(argv[1])<1) {
                 cout << "Se espera un numero natural mayor a 0." << endl;
                 cout << "Llamando a la ayuda..." << endl;
                 ayuda();
