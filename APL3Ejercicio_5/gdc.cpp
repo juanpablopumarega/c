@@ -543,18 +543,26 @@ int main(int argc, char *argv[]){
 
     listen(socketEscucha, 10);
 
+    char buffer[2000];
     int socketComunicacion;
+    int bytesREcibidos=0;
+
+    socketComunicacion = accept(socketEscucha, NULL, NULL);
+    cout << "EL SERVER RECIBIO UNA CONEXION" << endl;
 
     while(true) {
-        socketComunicacion = accept(socketEscucha, NULL, NULL);
-        cout << "EL SERVER RECIBIO UNA CONEXION" << endl;
+        
         string respuesta = "Prueba de respuesta";
+        
+        bytesREcibidos = read(socketComunicacion, buffer, sizeof(buffer)-1);
+        buffer[bytesREcibidos] = 0;
+        printf("Soy el servidor esto escuche: %s\n", buffer);
+
 
         write(socketComunicacion, respuesta.c_str(), strlen(respuesta.c_str()));
-        close(socketComunicacion);
         sleep(1);
     }
-
+    close(socketComunicacion);
     
     
     //while (1) {

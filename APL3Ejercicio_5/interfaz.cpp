@@ -203,10 +203,11 @@ int main(int argc, char *argv[]){
 
     while(accion != "quit") {
     
+        write(socketComunicacion, accion.c_str(), strlen(accion.c_str()));
+        
         bytesREcibidos = read(socketComunicacion, buffer, sizeof(buffer)-1);
-
         buffer[bytesREcibidos] = 0;
-        printf("%s\n", buffer);
+        printf("Soy la interfaz escuche esto: %s\n", buffer);
 
         //if(isValidSentence(accion)){
         //   cout << "Mensaje recibido del SERVER: " << respuesta << endl;
