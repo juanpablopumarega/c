@@ -21,6 +21,12 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 
 using namespace std;
 
@@ -156,52 +162,63 @@ void help()
     
 int main(int argc, char *argv[]){
     
-    if (argc != 1)
-    {
-        if (argc > 2) {
-            cout << "La cantidad de parametros es incorrecta";
-            return 1;
-        }
-        else if (!strcmp(argv[1],"--help") || !strcmp(argv[1], "-h")) {
-            help();
-            return 0;
-        }
-        else {
-            cout << "El parametro ingresado es incorrecto";
-            return 1;
-        }
-    }
+    //if (argc != 1)
+    //{
+    //    if (argc > 2) {
+    //        cout << "La cantidad de parametros es incorrecta";
+    //        return 1;
+    //    }
+    //    else if (!strcmp(argv[1],"--help") || !strcmp(argv[1], "-h")) {
+    //        help();
+    //        return 0;
+    //    }
+    //    else {
+    //        cout << "El parametro ingresado es incorrecto";
+    //        return 1;
+    //    }
+    //}
 
+    int socketComunicacion = socket(AF_INET, SOCK_STREAM, 0);
+
+    struct sockaddr_in config;
+    config.sin_family = AF_INET;
+    config.sin_port= htons(5000);
+    inet_pton(AF_INET, argv[1], &config.sin_addr);
+
+    int isValidConection = connect(socketComunicacion, 
+                        (struct sockaddr *)&config,
+                        sizeof(config));
+
+    if(isValidConection < 0) {
+        cout << "Error en la conexión con el servidor" << endl;
+        return EXIT_FAILURE;
+    }
+    
     string accion;
+    int bytesREcibidos=0;
+    char buffer[2000];
 
     cout << "INGRESE COMANDO: ";
     getline(cin, accion);
 
-    while(accion != "quit"){
+    while(accion != "quit") {
+    
+        bytesREcibidos = read(socketComunicacion, buffer, sizeof(buffer)-1);
 
-        if(isValidSentence(accion)){
+        buffer[bytesREcibidos] = 0;
+        printf("%s\n", buffer);
 
-            //INICIANDO LA CONEXION DE FIFO
-            char respuesta[1000];
-
-            int fifoClienteServidor = open("/tmp/clienteServidor", 01);
-            write(fifoClienteServidor,accion.c_str(),strlen(accion.c_str())+1);
-            close(fifoClienteServidor);
-
-            fifoClienteServidor = open("/tmp/clienteServidor", 00);
-            read(fifoClienteServidor,respuesta,sizeof(respuesta));
-            close(fifoClienteServidor);
-
-            cout << "Mensaje recibido del SERVER: " << respuesta << endl;
-            //FIN DE LA CONEXION
-
-        } else {
-            cout << "Sintaxis incorrecta" << endl;
-        }
+        //if(isValidSentence(accion)){
+        //   cout << "Mensaje recibido del SERVER: " << respuesta << endl;
+        //} else {
+        //   cout << "Sintaxis incorrecta" << endl;
+        //}
 
         cout << "INGRESE COMANDO: ";
         getline(cin, accion);
     }
+
+    close(socketComunicacion);
 
     return EXIT_SUCCESS;
 }

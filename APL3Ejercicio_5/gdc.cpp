@@ -1,17 +1,3 @@
-//------------------------------------------------------------------------------------------------------------------
-// APL:              3                                 
-// Ejercicio:        4                                 
-// Entrega N°:       1                                 
-// Nombre Script:    gdc.cpp                 
-// Ejemplo de uso:                              
-// Grupo 2                                             
-// Juarez Miguel                         DNI:38530113
-// Grassi Jonatan                        DNI:40077893
-// Lopez Pumarega Juan Pablo             DNI:34593023
-// Miranda Andres                        DNI:32972232
-// Salerti Natalia                       DNI:41559796
-//------------------------------------------------------------------------------------------------------------------
-
 #include <iostream>
 #include <cstring>
 #include <fstream>
@@ -22,6 +8,15 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <signal.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <time.h>
+#include <thread>
+#include <stdlib.h>
+#include <stdio.h>
 
 using namespace std;
 
@@ -536,22 +531,46 @@ int main(int argc, char *argv[]){
 
     signal(SIGUSR1,signal_handler);
 
-    mkfifo("/tmp/clienteServidor",0666);
-    
-    while (1) {
-        char contenido[1024];
+    struct sockaddr_in config;
+    memset(&config, '0', sizeof(config));
 
-        int fifoClienteServidor = open("/tmp/clienteServidor", O_RDONLY);
-        read(fifoClienteServidor,contenido,sizeof(contenido));
-        close(fifoClienteServidor);
-        //cout << "Mensaje recibido del CLIENTE: " << contenido << endl;
+    config.sin_family = AF_INET; //IPv4
+    config.sin_addr.s_addr = htonl(INADDR_ANY);
+    config.sin_port = htons(5000);
 
-        string respuesta = realizarAccion(string(contenido));
+    int socketEscucha = socket(AF_INET, SOCK_STREAM, 0);
+    bind(socketEscucha, (struct sockaddr *)&config, sizeof(config));
 
-        fifoClienteServidor = open("/tmp/clienteServidor", O_WRONLY);
-        write(fifoClienteServidor,respuesta.c_str(),strlen(respuesta.c_str())+1);
-        close(fifoClienteServidor);
+    listen(socketEscucha, 10);
+
+    int socketComunicacion;
+
+    while(true) {
+        socketComunicacion = accept(socketEscucha, NULL, NULL);
+        cout << "EL SERVER RECIBIO UNA CONEXION" << endl;
+        string respuesta = "Prueba de respuesta";
+
+        write(socketComunicacion, respuesta.c_str(), strlen(respuesta.c_str()));
+        close(socketComunicacion);
+        sleep(1);
     }
+
+    
+    
+    //while (1) {
+    //    char contenido[1024];
+
+    //    int fifoClienteServidor = open("/tmp/clienteServidor", O_RDONLY);
+    //    read(fifoClienteServidor,contenido,sizeof(contenido));
+    //    close(fifoClienteServidor);
+    //    //cout << "Mensaje recibido del CLIENTE: " << contenido << endl;
+
+    //    string respuesta = realizarAccion(string(contenido));
+
+    //    fifoClienteServidor = open("/tmp/clienteServidor", O_WRONLY);
+    //    write(fifoClienteServidor,respuesta.c_str(),strlen(respuesta.c_str())+1);
+    //    close(fifoClienteServidor);
+    //}
     
     return EXIT_SUCCESS;
 }

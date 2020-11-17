@@ -7,11 +7,11 @@ all: interfaz servidor
 
 interfaz:
 	rm -f interfaz
-	g++ -o interfaz interfaz.cpp
+	g++ -o interfaz interfaz.cpp -lpthread -lrt
 
 servidor:
 	rm -f gdc
-	g++ -o gdc gdc.cpp
+	g++ -o gdc gdc.cpp -lpthread -lrt
 
 clear:
 	rm -f interfaz
