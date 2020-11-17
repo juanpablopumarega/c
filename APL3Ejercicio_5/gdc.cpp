@@ -555,24 +555,21 @@ int main(int argc, char *argv[]){
         while(clienteConectado) {
             
             char buffer[2000];
-            string respuesta = "Prueba de respuesta";
             bytesREcibidos = read(socketComunicacion, buffer, sizeof(buffer)-1);
             buffer[bytesREcibidos] = 0;
-            printf("Soy el servidor esto escuche: %s\n", buffer);
             
             if(string(buffer)== "Fin") {
                 clienteConectado = 0;
             }
             else {
+                string respuesta = realizarAccion(string(buffer));
                 write(socketComunicacion, respuesta.c_str(), strlen(respuesta.c_str()));
                 sleep(1);
             }
         }
-        cout<< "Estamos en linea 569"<<endl;
         close(socketComunicacion);
         
     }
-    cout<< "Estamos en linea 572"<<endl;
     
     
     //while (1) {
