@@ -92,8 +92,9 @@ void funcThread1(list<string> lista, char *dirEntrada, char *dirSalida, int nroT
 
     while( iterador != lista.end())  {
 
-        string entrada = dirEntrada + *iterador;
-        string salida = dirSalida + *iterador;
+        string archivo = '/'+*iterador;
+        string entrada = dirEntrada + archivo;
+        string salida = dirSalida + archivo;
         ofstream MyWriteFile;
         int vocales=0,consonantes=0,otrochar=0,i=0;
         string cadena;
@@ -173,7 +174,7 @@ void ayuda(){
     cout << "\t- Ayuda del Script APL3Ejercicio1.cpp ..."                                                   << endl;
     cout << "\t- Descripcion - Script para contar letras dentro de todos los archivosd en directorio con una paralelización especificada por parametro"                                                   << endl;
     cout << "\t- Nombre Script:     ./APL3Ejercicio2 "                                                      << endl;
-    cout << "\t- Ejemplo de uso:    ./APL1Ejercicio2 3 './files/entrada' './files/salida'"                  << endl;
+    cout << "\t- Ejemplo de uso:    ./APL3Ejercicio2 3 './files/entrada' './files/salida'"                  << endl;
     cout << "\t- Parametros: "                  << endl;
     cout << "\t\t- N - [Required]     Numero entero mayor que cero que indique el paralelismo a realizarse. "  << endl;
     cout << "\t\t-                    En caso de que el paralelismo sea mayor al numero de files a analizar, quedará asignado como el nro de files" << endl;
