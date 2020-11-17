@@ -195,20 +195,27 @@ int main(int argc, char *argv[]){
     }
     
     string accion;
-    int bytesREcibidos=0;
+    int bytesREcibidos=1;
     char buffer[2000];
 
     cout << "INGRESE COMANDO: ";
     getline(cin, accion);
-
+    
     while(accion != "quit") {
     
         write(socketComunicacion, accion.c_str(), strlen(accion.c_str()));
         
         bytesREcibidos = read(socketComunicacion, buffer, sizeof(buffer)-1);
         buffer[bytesREcibidos] = 0;
-        printf("Soy la interfaz escuche esto: %s\n", buffer);
-
+        
+        if(string(buffer) == "serverdown") {
+            close(socketComunicacion);
+            cout << "Se cayo el servidor"<<endl;
+            return EXIT_FAILURE;
+        }
+        else {
+            printf("Soy la interfaz escuche esto: %s\n", buffer);            
+        }
         //if(isValidSentence(accion)){
         //   cout << "Mensaje recibido del SERVER: " << respuesta << endl;
         //} else {
@@ -219,7 +226,8 @@ int main(int argc, char *argv[]){
         getline(cin, accion);
     }
 
-    close(socketComunicacion);
+
+    write(socketComunicacion, "Fin", strlen("Fin"));
 
     return EXIT_SUCCESS;
 }

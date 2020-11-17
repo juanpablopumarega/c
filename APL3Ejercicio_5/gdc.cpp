@@ -25,13 +25,12 @@ typedef struct {
     string valor;
 } claveValor;
 
-void ayuda(){
-    //
-}
+int socketComunicacion = 0;
 
 void signal_handler(int signal_num) { 
    cout << "Se recibió la señal (" << signal_num << "). Se interrumpe el proceso. \n"; 
-   unlink("./fifo/clienteServidor");
+   write(socketComunicacion, "serverdown", strlen("serverdown"));
+   close(socketComunicacion);
    exit(signal_num);   
 } 
 
@@ -529,7 +528,7 @@ int main(int argc, char *argv[]){
         }
     }
 
-    signal(SIGUSR1,signal_handler);
+    
 
     struct sockaddr_in config;
     memset(&config, '0', sizeof(config));
@@ -540,29 +539,40 @@ int main(int argc, char *argv[]){
 
     int socketEscucha = socket(AF_INET, SOCK_STREAM, 0);
     bind(socketEscucha, (struct sockaddr *)&config, sizeof(config));
+    
 
-    listen(socketEscucha, 10);
-
-    char buffer[2000];
-    int socketComunicacion;
+    
+    signal(SIGUSR1,signal_handler);
     int bytesREcibidos=0;
 
-    socketComunicacion = accept(socketEscucha, NULL, NULL);
-    cout << "EL SERVER RECIBIO UNA CONEXION" << endl;
-
-    while(true) {
+    while (true) {
+        int clienteConectado = 1;
+        listen(socketEscucha, 10);
+        socketComunicacion = accept(socketEscucha, NULL, NULL);
         
-        string respuesta = "Prueba de respuesta";
+        cout << "EL SERVER RECIBIO UNA CONEXION" << endl;
+    
+        while(clienteConectado) {
+            
+            char buffer[2000];
+            string respuesta = "Prueba de respuesta";
+            bytesREcibidos = read(socketComunicacion, buffer, sizeof(buffer)-1);
+            buffer[bytesREcibidos] = 0;
+            printf("Soy el servidor esto escuche: %s\n", buffer);
+            
+            if(string(buffer)== "Fin") {
+                clienteConectado = 0;
+            }
+            else {
+                write(socketComunicacion, respuesta.c_str(), strlen(respuesta.c_str()));
+                sleep(1);
+            }
+        }
+        cout<< "Estamos en linea 569"<<endl;
+        close(socketComunicacion);
         
-        bytesREcibidos = read(socketComunicacion, buffer, sizeof(buffer)-1);
-        buffer[bytesREcibidos] = 0;
-        printf("Soy el servidor esto escuche: %s\n", buffer);
-
-
-        write(socketComunicacion, respuesta.c_str(), strlen(respuesta.c_str()));
-        sleep(1);
     }
-    close(socketComunicacion);
+    cout<< "Estamos en linea 572"<<endl;
     
     
     //while (1) {
