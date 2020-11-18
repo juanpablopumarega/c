@@ -79,7 +79,7 @@ bool isValidREMOVEorFIND(string sentencia) {
 
     for (columna = 0; std::getline(registro, dato, ' '); ++columna) {}
 
-    if(columna != 4){
+    if(columna != 3){
         cout << columna << endl;
         return false;
     }
@@ -110,10 +110,33 @@ bool isValidCREATE(string sentencia) {
     std::stringstream registro(sentencia);
     std::string dato;
     int columna = 0;
+    list<string> columnName;
+    list<string> duplicated;
 
     for (columna = 0; std::getline(registro, dato, ' '); ++columna) {
         if(columna == 1 && dato != "COLLECTION")
             return false;
+
+        if(columna>2) {
+            
+            if(columnName.size() > 0) {
+                
+                columnName.push_back(dato);
+                
+                //Reviso si existen campos duplicados.
+                columnName.sort();
+                duplicated = columnName;
+                duplicated.unique();
+
+                if(duplicated.size() != columnName.size()){
+                    return false;
+                }
+                //Fin de la revisión de duplicados.
+
+            } else {
+                columnName.push_back(dato);
+            }
+        }
     }
 
     if(columna < 5){
@@ -203,31 +226,32 @@ int main(int argc, char *argv[]){
     
     while(accion != "quit") {
     
-        write(socketComunicacion, accion.c_str(), strlen(accion.c_str()));
+        if(isValidSentence(accion)) {
+
+            write(socketComunicacion, accion.c_str(), strlen(accion.c_str()));
         
-        bytesREcibidos = read(socketComunicacion, buffer, sizeof(buffer)-1);
-        buffer[bytesREcibidos] = 0;
+            bytesREcibidos = read(socketComunicacion, buffer, sizeof(buffer)-1);
+            buffer[bytesREcibidos] = 0;
         
-        if(string(buffer) == "serverdown") {
-            close(socketComunicacion);
-            cout << "Se cayo el servidor"<<endl;
-            return EXIT_FAILURE;
+            if(string(buffer) == "serverdown") {
+                close(socketComunicacion);
+                cout << "Se cayo el servidor"<<endl;
+                return EXIT_FAILURE;
+            }
+            else {
+                printf("%s\n", buffer);           
+            }
+
+        } else {
+           cout << "Sintaxis incorrecta" << endl;
         }
-        else {
-            printf("%s\n", buffer);           
-        }
-        //if(isValidSentence(accion)){
-        //   cout << "Mensaje recibido del SERVER: " << respuesta << endl;
-        //} else {
-        //   cout << "Sintaxis incorrecta" << endl;
-        //}
 
         cout << "INGRESE COMANDO: ";
         getline(cin, accion);
     }
 
-
     write(socketComunicacion, "Fin", strlen("Fin"));
+    close(socketComunicacion);
 
     return EXIT_SUCCESS;
 }
