@@ -480,7 +480,8 @@ void help()
     cout << "------------------------------------------------------------------------" << endl;
     cout << "------------------------------------------------------------------------" << endl;
     cout << "SERVIDOR de la Base de datos creada en c++" << endl;
-    cout << " - Admitira un Cliente que se conectara a traves de FIFO." << endl;
+    cout << "Comando de ejecucion: ./gdc [(Required)Numero de Puerto]" << endl;
+    cout << " - Admitira un Cliente que se conectara a traves de socket." << endl;
     cout << " - Por cada creacion de tabla se creara un archivo .dat en ./tablas" << endl;
     cout << " - Por cada creacion de tabla se creara un archivo .schema en ./schemas con la estructura de la tabla deseada" << endl;
     cout << " - Las acciones permitidas por el servidor son las siguientes:" << endl;
@@ -500,35 +501,30 @@ void help()
 
 int main(int argc, char *argv[]){
 
-    if (argc != 1)
-    {
-        if (argc > 2) {
-            cout << "La cantidad de parametros es incorrecta";
-            return 1;
-        }
-        else if (!strcmp(argv[1],"--help") || !strcmp(argv[1], "-h")) {
-            help();
-            return 0;
-        }
-        else {
-            cout << "El parametro ingresado es incorrecto";
-            return 1;
-        }
+    if (argc != 2) {
+        cout << "La cantidad de parametros es incorrecta" << endl;
+        return 1;
+    }
+    else if (!strcmp(argv[1],"--help") || !strcmp(argv[1], "-h")) {
+        help();
+        return 0;
+    }
+    else if (atoi(argv[1])<1000 || atoi(argv[1])>6000) {
+        cout << "El numero de puerto debe estar entre 1000 y 6000" << endl;
+        return 0;
     }
 
-    
+    int nroPuerto = atoi(argv[1]);
 
     struct sockaddr_in config;
     memset(&config, '0', sizeof(config));
 
     config.sin_family = AF_INET; //IPv4
     config.sin_addr.s_addr = htonl(INADDR_ANY);
-    config.sin_port = htons(5000);
+    config.sin_port = htons(nroPuerto);
 
     int socketEscucha = socket(AF_INET, SOCK_STREAM, 0);
     bind(socketEscucha, (struct sockaddr *)&config, sizeof(config));
-    
-
     
     signal(SIGUSR1,signal_handler);
     int bytesREcibidos=0;
@@ -555,27 +551,10 @@ int main(int argc, char *argv[]){
                 sleep(1);
             }
         }
+
         close(socketComunicacion);
-        
     }
-    
-    
-    //while (1) {
-    //    char contenido[1024];
-
-    //    int fifoClienteServidor = open("/tmp/clienteServidor", O_RDONLY);
-    //    read(fifoClienteServidor,contenido,sizeof(contenido));
-    //    close(fifoClienteServidor);
-    //    //cout << "Mensaje recibido del CLIENTE: " << contenido << endl;
-
-    //    string respuesta = realizarAccion(string(contenido));
-
-    //    fifoClienteServidor = open("/tmp/clienteServidor", O_WRONLY);
-    //    write(fifoClienteServidor,respuesta.c_str(),strlen(respuesta.c_str())+1);
-    //    close(fifoClienteServidor);
-    //}
     
     return EXIT_SUCCESS;
 }
-
 //Fin

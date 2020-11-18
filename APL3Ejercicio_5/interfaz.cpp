@@ -167,7 +167,8 @@ void help()
     cout << "---------------------------------------------------------------------------------------" << endl;
     cout << "---------------------------------------------------------------------------------------" << endl;
     cout << "Interfaz que se conectará a una Base de Datos del mismo servidor" << endl;
-    cout << " - Se conectara al server a traves de FIFO." << endl;
+    cout << " - Comando de ejecucion: ./interfaz (Required) [Direccion IP del Servidor] (Required) [Numero de Puerto]" << endl;
+    cout << " - Se conectara al server a traves de socket." << endl;
     cout << " - Las acciones permitidas por el servidor son las siguientes:" << endl;
     cout << "\t - CREATE COLLECTION tablename campo1 campo2 [campo N]." << endl;
     cout << "\t\tCreara la tabla tablename con los campos indicados y el primero sera la PK" << endl;
@@ -185,27 +186,26 @@ void help()
     
 int main(int argc, char *argv[]){
     
-    //if (argc != 1)
-    //{
-    //    if (argc > 2) {
-    //        cout << "La cantidad de parametros es incorrecta";
-    //        return 1;
-    //    }
-    //    else if (!strcmp(argv[1],"--help") || !strcmp(argv[1], "-h")) {
-    //        help();
-    //        return 0;
-    //    }
-    //    else {
-    //        cout << "El parametro ingresado es incorrecto";
-    //        return 1;
-    //    }
-    //}
+    if (argc < 2 || argc > 3) {
+        cout << "La cantidad de parametros es incorrecta" << endl;
+        return 1;
+    }
+    else if (argc == 2 && (!strcmp(argv[1],"--help") || !strcmp(argv[1], "-h"))) {
+        help();
+        return 0;
+    }
+    else if (argc == 3 && (atoi(argv[2])<1000 || atoi(argv[2])>6000)) {
+        cout << "El numero de puerto debe estar entre 1000 y 6000" << endl;
+        return 0;
+    }
 
     int socketComunicacion = socket(AF_INET, SOCK_STREAM, 0);
 
+    int nroDePuerto = atoi(argv[2]);
+
     struct sockaddr_in config;
     config.sin_family = AF_INET;
-    config.sin_port= htons(5000);
+    config.sin_port= htons(nroDePuerto);
     inet_pton(AF_INET, argv[1], &config.sin_addr);
 
     int isValidConection = connect(socketComunicacion, 
