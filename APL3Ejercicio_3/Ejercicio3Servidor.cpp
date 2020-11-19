@@ -8,13 +8,12 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
-#include <string.h>
 #include <semaphore.h>
-//#include <thread>
 #include <fcntl.h>
-#include <string.h>
 #include <string>
 #include <signal.h>
+#include <ios>
+
 
 #define FIL 4
 #define COL 4
@@ -26,6 +25,8 @@ void mostrarTablero(char mat[][COL]);
 void help();
 
 void inicializarMat(char mat[][COL]);
+
+void liberarRecursos();
 
 bool huboCoincidencia(int fil1, int col1, int *filCol, char mat[][COL]);
 
@@ -41,16 +42,25 @@ void handlerSigSigusr1(int sig);
 
 void actualizarTablero(char tablero[][COL], char mat[][COL], int fil, int col);
 
-void* funcionDentroDelHilo(void* pidJuego);
-
-void crearHilo ();
-
 static int SIGUSR1_reciv = 0;
+
+sem_t *esperaClient;
+sem_t *blockServer;
+sem_t *esperaIng;
+sem_t *semTablero;
+sem_t *semMuestra;
+sem_t *semFinJuego;
+char(*tablero)[COL];
+int *filCol; 
+
+static int clienteJugando = 0;
 
 static int finJuego = 0;
 
 int main(int argc, char const *argv[])
-{
+{   
+    int valor;
+
     if (argc != 1)
     {
         if (argc > 2)
@@ -58,7 +68,7 @@ int main(int argc, char const *argv[])
             cout << "La cantidad de parametros es incorrecta";
             return 1;
         }
-        else if (!strcmp(argv[1],"--help") || !strcmp(argv[1], "-h"))
+        else if (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h"))
         {
             help();
             return 0;
@@ -70,15 +80,21 @@ int main(int argc, char const *argv[])
         }
     }
 
-    sem_t *esperaClient = sem_open("esperaCliente", O_CREAT, 0600, 0);
-    sem_t *blockServer = sem_open("bloqueoServer", O_CREAT, 0600, 1);
-    sem_t *esperaIng = sem_open("esperaIngPar1", O_CREAT, 0600, 0);
-    sem_t *semTablero = sem_open("escribTab", O_CREAT, 0600, 0);
-    sem_t *semMuetra = sem_open("muestraTab", O_CREAT, 0600, 0);
-    sem_t *semFinJuego = sem_open("finJuego", O_CREAT, 0600, 0);
-    //sem_t *esperaIngPar2 = sem_open("esperaIngPar2", O_CREAT, 0600, 0);
+    blockServer = sem_open("bloqueoServer", O_CREAT, 0600, 1);
+    sem_getvalue(blockServer, &valor);
+    if (!valor)
+    {
+        cout << "Error,El servidor ya ha sido iniciado" << endl;
+        return 0;
+    }
 
-    sem_wait(blockServer); //permite que se ejecute 1 solo server
+    sem_wait(blockServer);
+
+    esperaClient = sem_open("esperaCliente", O_CREAT, 0600, 0);
+    esperaIng = sem_open("esperaIngPar1", O_CREAT, 0600, 0);
+    semTablero = sem_open("escribTab", O_CREAT, 0600, 0);
+    semMuestra = sem_open("muestraTab", O_CREAT, 0600, 0);
+    semFinJuego = sem_open("finDeJuego", O_CREAT, 0600, 0);
 
     signal(SIGUSR1, handlerSigSigusr1); //Señal de corte
 
@@ -86,7 +102,6 @@ int main(int argc, char const *argv[])
     int fil1, col1;
     int fd = shm_open("tablero", O_CREAT | O_RDWR, 0600); //fileDescriptor
     ftruncate(fd, sizeof(char[FIL][COL]));
-    char(*tablero)[COL];
     tablero = (char(*)[COL])mmap(NULL, sizeof(char[FIL][COL]), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     close(fd);
 
@@ -97,23 +112,22 @@ int main(int argc, char const *argv[])
     ///--MEM COMP FIL Y COL /// filCol[0]->fil1 | filCol[1]->col1
     int fd2 = shm_open("filaYcolumna", O_CREAT | O_RDWR, 0600); //fileDescriptor
     ftruncate(fd, sizeof(int[2]));
-    int *filCol = (int *)mmap(NULL, sizeof(int[2]), PROT_READ | PROT_WRITE, MAP_SHARED, fd2, 0);
+    filCol = (int *)mmap(NULL, sizeof(int[2]), PROT_READ | PROT_WRITE, MAP_SHARED, fd2, 0);
     close(fd);
 
     signal(SIGINT, SIG_IGN); //ignora ctrl+c
-    cout << "esperando jugador" << endl;
-    
-    /// Creo hilo para controlar señal de corte
-    //crearHilo ();
-    
+
     while (!SIGUSR1_reciv)
     {
+        cout << "Esperando jugador..." << endl;
+        cout << "Tablero destapado" << endl;
         inicializarMat(tablero);
         iniciarJuego(mat);
         mostrarTablero(mat);
         finJuego = 0;
         sem_post(semTablero);
         sem_wait(esperaClient); ///Espera cliente
+        clienteJugando=1;
         while (finJuego != PARFIN)
         {
             sem_wait(esperaIng);
@@ -124,7 +138,7 @@ int main(int argc, char const *argv[])
             sem_wait(esperaIng);
             actualizarTablero(tablero, mat, filCol[0] - 1, filCol[1] - 1);
             sem_post(semTablero);
-            sem_wait(semMuetra);
+            sem_wait(semMuestra);
             if (!huboCoincidencia(fil1, col1, filCol, mat))
                 taparCasillas(fil1, col1, filCol, tablero);
             else
@@ -135,20 +149,23 @@ int main(int argc, char const *argv[])
             }
             sem_post(semTablero);
         }
+        clienteJugando=0;
     }
+    sem_post(blockServer);
+    liberarRecursos();
 
-    //----Liberacion de recursos
-    //munmap(mat, sizeof(int[4][4]));
-    //shm_unlink("matrizMemotest");
+    return EXIT_SUCCESS;
+}
 
+void liberarRecursos()
+{
     munmap(filCol, sizeof(int[2]));
     shm_unlink("filaYcolumna");
     munmap(tablero, sizeof(int[FIL][COL]));
     shm_unlink("tablero");
 
     sem_close(semFinJuego);
-    shm_unlink("finJuego");
-
+    sem_unlink("finDeJuego");
     sem_close(esperaClient);
     sem_unlink("esperaCliente");
     sem_close(blockServer);
@@ -157,10 +174,8 @@ int main(int argc, char const *argv[])
     sem_unlink("esperaIngPar1");
     sem_close(semTablero);
     sem_unlink("escribTab");
-    sem_close(semMuetra);
+    sem_close(semMuestra);
     sem_unlink("muestraTab");
-
-    return EXIT_SUCCESS;
 }
 
 void taparCasillas(int fil1, int col1, int *filCol, char mat[][COL])
@@ -182,8 +197,22 @@ void actualizarTablero(char tablero[][COL], char mat[][COL], int fil, int col)
 
 void handlerSigSigusr1(int sig)
 {
+
     if (SIGUSR1 == sig)
-        SIGUSR1_reciv = 1;
+    {
+        if (clienteJugando == 0)
+        {
+            cout << "Se recibio señal(" << sig << ")se interrumpira el proceso" << endl;
+            liberarRecursos();
+            exit(sig);
+        }
+        else
+        {
+            cout << "Se recibio señal(" << sig << ")se interrumpira el proceso" << endl;
+            cout << "una vez finalizada la partida" << endl;
+            SIGUSR1_reciv = 1;
+        }
+    }
 }
 
 void borrarCaracter(char *cad, char caracter)
@@ -212,7 +241,12 @@ void inicializarMat(char mat[][COL])
 
 void mostrarTablero(char tablero[][COL])
 {
-    cout << "  1 2 3 4 " << endl;
+    cout << "  ";
+    for (size_t i = 0; i < COL; i++)
+    {
+        cout << i + 1 << " ";
+    }
+    cout << endl;
     for (size_t i = 0; i < FIL; i++)
     {
         cout << i + 1;
@@ -223,11 +257,16 @@ void mostrarTablero(char tablero[][COL])
 }
 
 void help()
-{
+{   
+    cout << "AYUDA" << endl;
     cout << "Nuestro script replica el clasico juego memotest" << endl;
     cout << "Debera en un tablero de 4x4 indicar las letras que estan repetidas" << endl;
     cout << "Solo un jugador podra jugar a la vez" << endl;
     cout << "Al finalizar la partida se le mostrara el tiempo que tardo en realizarlo" << endl;
+    cout << "SINTAXIS" << endl;
+    cout << "./Ejercicio3Servidor.cpp" << endl;
+    cout << "./Ejercicio3Servidor.cpp --help" << endl;
+    cout << "./Ejercicio3Servidor.cpp -h" << endl;
 }
 
 void iniciarJuego(char mat[][COL])
@@ -255,34 +294,4 @@ void iniciarJuego(char mat[][COL])
         cantLetras--;
         completoMath++;
     }
-}
-
-void *funcionDentroDelHilo(void* pidJuego) {
-    signal(SIGUSR1, handlerSigSigusr1); //Señal de corte
-
-    pid_t* pid = (pid_t*) pidJuego;
-
-    while(true){
-        while (!SIGUSR1_reciv) {
-            if(finJuego){
-            kill( -*pid, SIGKILL);
-            kill( -getgid(), SIGKILL);
-            }
-            
-        }
-    }
-}
-
-void crearHilo () {
-    
-    // id del hilo
-    pthread_t hilo; 
-    pid_t pidJuego = getgid();
-
-    //
-    pthread_create(&hilo, NULL, &funcionDentroDelHilo, &pidJuego);
-
-    pthread_join(hilo, NULL); 
-    pthread_exit(NULL); 
-
 }
