@@ -188,6 +188,8 @@ bool huboCoincidencia(int fil1, int col1, int *filCol, char mat[][COL])
 {
     if (mat[fil1][col1] == mat[(*filCol - 1)][(*(filCol + 1) - 1)])
         return true;
+
+    return false;
 }
 
 void actualizarTablero(char tablero[][COL], char mat[][COL], int fil, int col)
