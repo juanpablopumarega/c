@@ -1,16 +1,3 @@
-//------------------------------------------------------------------------------------------------------------------
-// APL:              3
-// Ejercicio:        1
-// Entrega N°:       1
-// Nombre Script:    APL3Ejercicio1.cpp
-// Grupo 2
-// Juarez Miguel                         DNI:38530113
-// Grassi Jonatan                        DNI:40077893
-// Lopez Pumarega Juan Pablo             DNI:34593023
-// Miranda Andres                        DNI:32972232
-// Salerti Natalia                       DNI:41559796
-//------------------------------------------------------------------------------------------------------------------
-
 #include <iostream>
 #include <stdlib.h>
 #include <unistd.h>
